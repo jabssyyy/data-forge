@@ -1,0 +1,1028 @@
+'use strict';
+/* =====================================================================
+ * app.js - UI, chart and controls for "Sparsity is not a budget".
+ *
+ * Everything on the page is one of four things, and each is labelled as
+ * such in the DOM:
+ *
+ *   LIVE         the BDH forward pass in bdh.js, run in this browser on
+ *                every control change. Nothing here is replayed.
+ *   ANALYTIC     oracle surprisal, closed form from the sequence
+ *                definition. No model touches it.
+ *   PRECOMPUTED  the two weight files, trained once on one CPU core.
+ *   SYNTHETIC    the letter corpus (BDH paper Section 6.4 protocol).
+ *
+ * CHART ARCHITECTURE - why two panels and not three curves on one plot.
+ * Active-neuron fraction is a fraction (0..1); oracle surprisal and model
+ * cross-entropy are bits (0..~9). Putting a fraction and a bit count on
+ * one plot needs two y-scales, and the alignment between two y-scales is
+ * arbitrary - it invents a correlation the data does not contain. So the
+ * two bit-valued curves share one axis in the lower panel, the fraction
+ * gets its own axis in the upper panel, and both panels share one token
+ * axis. Every visual comparison the reader makes is then a real one.
+ *
+ * CURVE ALIGNMENT. bdh.js returns cross-entropy indexed by the position
+ * MAKING the prediction: entry t is -log2 p(token t+1), so there are T-1
+ * of them. Oracle surprisal is indexed by the token BEING predicted. To
+ * make the two comparable, cross-entropy is plotted at index t+1 - the
+ * token it is about. Token 0 therefore has no cross-entropy value, which
+ * is correct: nothing predicted it. This is the `of_target` alignment
+ * that bdh_probe.py reports alongside `at_position`.
+ * ===================================================================== */
+
+/* ---- protocol constants (BDH paper Section 6.4; see build.md 4.2) ---- */
+const WARMUP_LEN = 13;   // fixed 13-letter warm-up
+const WORD_LEN   = 8;    // 8-letter random word
+const ALPHABET   = 26;   // single Latin letters
+const N_TOTAL    = 1024; // neurons in this shrunk model (paper: 65536)
+
+const WEIGHT_FILES = {
+  trained:   'weights_trained.json',
+  untrained: 'weights_untrained.json'
+};
+
+/* ------------------------------------------------------------- state */
+const state = {
+  mode: 'instrument',     // 'instrument' | 'sandbox'
+  layer: 2,
+  repeats: 8,
+  word: 'surprise',
+  weights: 'trained',
+  sandboxText: 'thequickbrownfoxjumpsoverthelazydog',
+  hover: null,            // hovered token index, or null
+  result: null,           // last successful compute
+  warmup: null            // the 13 fixed warm-up token ids, from the weight file
+};
+
+const models = {};        // kind -> BDH instance
+const computeCache = new Map();
+
+/* --------------------------------------------------------------- dom */
+const $ = (id) => document.getElementById(id);
+
+const el = {
+  claimBar: $('claimBar'),
+  tabInstrument: $('tabInstrument'),
+  tabSandbox: $('tabSandbox'),
+  themeToggle: $('themeToggle'),
+  themeToggleLabel: $('themeToggleLabel'),
+  offdist: $('offdistBanner'),
+  figureSub: $('figureSub'),
+  roMem: $('roMem'), roRep: $('roRep'), roRatio: $('roRatio'),
+  roLayerTag: $('roLayerTag'), readout: $('readout'),
+  legend: $('legend'),
+  chartWrap: $('chartWrap'),
+  svg: $('chartSvg'),
+  status: $('chartStatus'),
+  statusText: $('chartStatusText'),
+  tooltip: $('tooltip'),
+  phaseMeansRow: $('phaseMeansRow'),
+  tableToggle: $('tableToggle'),
+  tableView: $('tableView'),
+  tableBody: $('tableBody'),
+  controls: $('controls'),
+  layerSeg: $('layerSeg'),
+  layerMeta: $('layerMeta'),
+  repeatSlider: $('repeatSlider'),
+  repeatOut: $('repeatOut'),
+  repeatMeta: $('repeatMeta'),
+  wordInput: $('wordInput'),
+  wordMsg: $('wordMsg'),
+  weightsSeg: $('weightsSeg'),
+  weightsMeta: $('weightsMeta'),
+  sandboxControl: $('sandboxControl'),
+  sandboxInput: $('sandboxInput'),
+  sandboxMsg: $('sandboxMsg'),
+  noteTok0: $('noteTok0'),
+  noteAlign: $('noteAlign'),
+  buildStamp: $('buildStamp')
+};
+
+/* --------------------------------------------------------- utilities */
+const letterOf = (id) => String.fromCharCode(97 + id);
+const idOf = (ch) => ch.charCodeAt(0) - 97;
+const pct = (v) => (v * 100).toFixed(1) + '%';
+const bits = (v) => v.toFixed(2);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+/* Phase of each token in the instrument sequence. Token 0 is warm-up but is
+ * excluded from every mean - see excludeTokenZero below. */
+function phaseAt(i, repeats) {
+  if (i < WARMUP_LEN) return 'warmup';
+  if (i < WARMUP_LEN + WORD_LEN) return 'memorize';
+  return 'repeat';
+}
+
+/* Mean over a phase, ALWAYS skipping token 0.
+ * Token 0 attends to nothing (attention is tril(diagonal=-1)) so it reads
+ * exactly 0.0% in every layer. Averaging that into the warm-up figure would
+ * drag it down by a constant that is a property of the code, not of the model.
+ * The probe's published 18.14% warm-up figure DOES include token 0; this page
+ * says so in the honesty panel rather than quietly reporting a different number. */
+function phaseMean(series, repeats, phase) {
+  let sum = 0, n = 0;
+  for (let i = 1; i < series.length; i++) {
+    if (phaseAt(i, repeats) === phase) { sum += series[i]; n++; }
+  }
+  return n ? sum / n : null;
+}
+
+/* ------------------------------------------------------ weight loading */
+async function getModel(kind) {
+  if (models[kind]) return models[kind];
+  const res = await fetch(WEIGHT_FILES[kind], { cache: 'force-cache' });
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + WEIGHT_FILES[kind]);
+  const json = await res.json();
+  models[kind] = new BDH(json);
+  if (!state.warmup) state.warmup = json.warmup.slice();
+  return models[kind];
+}
+
+/* ---------------------------------------------------------- sequences */
+function buildTokens() {
+  if (state.mode === 'sandbox') {
+    return state.sandboxText.split('').map(idOf);
+  }
+  const word = state.word.split('').map(idOf);
+  return buildSequence(state.warmup, word, state.repeats);
+}
+
+/* --------------------------------------------------------- computation */
+function cacheKey() {
+  return state.mode === 'sandbox'
+    ? 'S|' + state.weights + '|' + state.sandboxText
+    : 'I|' + state.weights + '|' + state.word + '|' + state.repeats;
+}
+
+function compute() {
+  const key = cacheKey();
+  if (computeCache.has(key)) return computeCache.get(key);
+
+  const model = models[state.weights];
+  if (!model) return null;
+
+  const tokens = buildTokens();
+  const t0 = performance.now();
+  const out = model.forward(tokens);
+  const ms = performance.now() - t0;
+
+  const T = tokens.length;
+
+  /* cross-entropy re-indexed onto the token being predicted (see header) */
+  const ceAtTarget = new Array(T).fill(null);
+  for (let t = 0; t < T - 1; t++) ceAtTarget[t + 1] = out.crossEntropyBits[t];
+
+  /* oracle surprisal: ANALYTIC, no model involved */
+  let oracle = null;
+  if (state.mode === 'instrument') {
+    oracle = oracleSurprisalBits(WARMUP_LEN, WORD_LEN, state.repeats);
+  }
+
+  const result = {
+    tokens: tokens,
+    T: T,
+    activeFraction: out.activeFraction,
+    activeCounts: out.activeCounts,
+    ceAtTarget: ceAtTarget,
+    oracle: oracle,
+    ms: ms,
+    mode: state.mode,
+    repeats: state.repeats
+  };
+
+  if (computeCache.size > 40) computeCache.clear();
+  computeCache.set(key, result);
+  return result;
+}
+
+/* ============================== CHART ================================= */
+
+const FONT_MONO = "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+
+/* Axis ticks land on round numbers or they are not worth printing. Pick the
+ * smallest offered step that covers the data in at most `maxIntervals`
+ * intervals, so every printed tick is a clean multiple of that step. */
+function niceScale(maxVal, steps, maxIntervals, floor) {
+  for (const step of steps) {
+    const n = Math.ceil(Math.max(maxVal, floor) / step - 1e-9);
+    if (n <= maxIntervals) return { max: n * step, ticks: n, step: step };
+  }
+  const step = steps[steps.length - 1];
+  const n = Math.ceil(Math.max(maxVal, floor) / step - 1e-9);
+  return { max: n * step, ticks: n, step: step };
+}
+
+function pickXTicks(T, plotW, isInstrument) {
+  const minGap = 36;
+  const ticks = [];
+  const push = (i) => {
+    if (i < 0 || i > T - 1) return;
+    for (const e of ticks) if (Math.abs(e - i) * (plotW / (T - 1)) < minGap) return;
+    ticks.push(i);
+  };
+  push(0);
+  if (isInstrument) { push(WARMUP_LEN); push(WARMUP_LEN + WORD_LEN); }
+  push(T - 1);
+  const stride = T <= 24 ? 4 : (T <= 48 ? 8 : 16);
+  for (let i = stride; i < T - 1; i += stride) push(i);
+  return ticks.sort((a, b) => a - b);
+}
+
+function renderChart() {
+  const r = state.result;
+  const wrap = el.chartWrap;
+  const W = Math.max(300, wrap.clientWidth - 16);
+  const narrow = W < 520;
+
+  /* geometry */
+  const padL = narrow ? 38 : 46;
+  const padR = narrow ? 12 : 18;
+  const capH = 15;          // panel-A caption row
+  const phaseH = 16;        // phase-label row, directly above the bands
+  const hA = narrow ? 126 : 176;
+  const midGap = narrow ? 30 : 34;
+  const hB = narrow ? 88 : 122;
+  const axisH = 32;
+  const topH = capH + phaseH;
+  const H = topH + hA + midGap + hB + axisH;
+  const plotW = W - padL - padR;
+  const aTop = topH;
+  const bTop = topH + hA + midGap;
+
+  const svg = el.svg;
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+  /* colours read from the token system so both themes are correct */
+  const cAct = cssVar('--s-act');
+  const cCe = cssVar('--s-ce');
+  const cOr = cssVar('--s-oracle');
+  const cActWash = cssVar('--s-act-wash');
+  const cOrWash = cssVar('--s-oracle-wash');
+  const cGrid = cssVar('--grid');
+  const cAxis = cssVar('--axis');
+  const cInk2 = cssVar('--ink-2');
+  const cInk3 = cssVar('--ink-3');
+  const cSurface = cssVar('--surface');
+  const cBandWarm = cssVar('--band-warm');
+  const cBandMem = cssVar('--band-mem');
+
+  if (!r) { svg.innerHTML = ''; return; }
+
+  const T = r.T;
+  const isInstrument = r.mode === 'instrument';
+  const pendingModel = !!r.pending;   // weights still loading: no model curves yet
+  const act = r.activeFraction[state.layer];
+
+  /* scales */
+  const x = (i) => padL + (T === 1 ? plotW / 2 : (i / (T - 1)) * plotW);
+
+  let maxAct = 0;
+  for (let i = 0; i < T; i++) if (act[i] > maxAct) maxAct = act[i];
+  const sA = niceScale(maxAct, [0.02, 0.05, 0.1], 5, 0.1);
+  const maxA = sA.max;
+  const yA = (v) => aTop + hA - (v / maxA) * hA;
+
+  let maxBits = isInstrument ? Math.log2(ALPHABET) : 0;
+  for (let i = 0; i < T; i++) if (r.ceAtTarget[i] != null && r.ceAtTarget[i] > maxBits) maxBits = r.ceAtTarget[i];
+  const sB = niceScale(maxBits, [1, 2, 5], 4, 5);
+  const maxB = sB.max;
+  const yB = (v) => bTop + hB - (v / maxB) * hB;
+
+  const out = [];
+  const line = (x1, y1, x2, y2, stroke, w, extra) =>
+    out.push('<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) +
+      '" y2="' + y2.toFixed(1) + '" stroke="' + stroke + '" stroke-width="' + (w || 1) + '"' +
+      (extra || '') + '/>');
+  const text = (tx, ty, str, fill, size, anchor, extra) =>
+    out.push('<text x="' + tx.toFixed(1) + '" y="' + ty.toFixed(1) + '" fill="' + fill +
+      '" font-size="' + size + '" text-anchor="' + (anchor || 'start') +
+      '" font-family="' + FONT_MONO + '"' + (extra || '') + '>' + esc(str) + '</text>');
+
+  /* ---------------- phase bands: SYNTHETIC structure of the corpus ---- */
+  if (isInstrument) {
+    const bands = [
+      ['warmup', 0, WARMUP_LEN - 1, cBandWarm, 'warm-up'],
+      ['memorize', WARMUP_LEN, WARMUP_LEN + WORD_LEN - 1, cBandMem, 'memorize'],
+      ['repeat', WARMUP_LEN + WORD_LEN, T - 1, 'none', 'repeat']
+    ];
+    for (const [, i0, i1, fill, label] of bands) {
+      if (i1 < i0) continue;
+      const xa = i0 === 0 ? padL : (x(i0) + x(i0 - 1)) / 2;
+      const xb = i1 >= T - 1 ? padL + plotW : (x(i1) + x(i1 + 1)) / 2;
+      if (fill !== 'none') {
+        out.push('<rect x="' + xa.toFixed(1) + '" y="' + aTop + '" width="' + (xb - xa).toFixed(1) +
+          '" height="' + (bTop + hB - aTop) + '" fill="' + fill + '"/>');
+      }
+      if (xb - xa > 34) {
+        text((xa + xb) / 2, topH - 5, label.toUpperCase(), cInk3, 9.5, 'middle',
+          ' letter-spacing="0.09em"');
+      }
+      if (i0 > 0) line(xa, aTop, xa, bTop + hB, cAxis, 1);
+    }
+  }
+
+  /* ------------------------------------------- gridlines + y-axis ---- */
+  for (let k = 0; k <= sA.ticks; k++) {
+    const v = sA.step * k;
+    const yy = yA(v);
+    line(padL, yy, padL + plotW, yy, k === 0 ? cAxis : cGrid, 1);
+    text(padL - 7, yy + 3.5, Math.round(v * 100) + '%', cInk3, 9.5, 'end');
+  }
+  for (let k = 0; k <= sB.ticks; k++) {
+    const v = sB.step * k;
+    const yy = yB(v);
+    line(padL, yy, padL + plotW, yy, k === 0 ? cAxis : cGrid, 1);
+    text(padL - 7, yy + 3.5, String(v), cInk3, 9.5, 'end');
+  }
+
+  /* panel captions */
+  out.push('<text x="' + padL + '" y="' + (bTop - 11) + '" fill="' + cInk3 +
+    '" font-size="9.5" font-family="' + FONT_MONO + '" letter-spacing="0.08em">BITS</text>');
+  out.push('<text x="' + (padL + plotW) + '" y="' + (bTop - 11) + '" fill="' + cInk3 +
+    '" font-size="9.5" text-anchor="end" font-family="' + FONT_MONO +
+    '" letter-spacing="0.08em">' + (isInstrument ? 'TRUTH vs MODEL' : 'MODEL ONLY') + '</text>');
+  out.push('<text x="' + padL + '" y="11" fill="' + cInk3 +
+    '" font-size="9.5" font-family="' + FONT_MONO +
+    '" letter-spacing="0.08em">ACTIVE NEURONS, LAYER ' + state.layer + '</text>');
+  if (!narrow) {
+    out.push('<text x="' + (padL + plotW) + '" y="11" fill="' + cInk3 +
+      '" font-size="9.5" text-anchor="end" font-family="' + FONT_MONO +
+      '" letter-spacing="0.08em">% OF ' + N_TOTAL + ' NEURONS</text>');
+  }
+
+  /* --------------------------------------- lower panel: bits curves --- */
+  if (isInstrument && r.oracle) {
+    let d = 'M' + x(0).toFixed(1) + ' ' + yB(r.oracle[0]).toFixed(1);
+    for (let i = 1; i < T; i++) d += ' L' + x(i).toFixed(1) + ' ' + yB(r.oracle[i]).toFixed(1);
+    const area = d + ' L' + x(T - 1).toFixed(1) + ' ' + yB(0).toFixed(1) +
+                 ' L' + x(0).toFixed(1) + ' ' + yB(0).toFixed(1) + ' Z';
+    out.push('<path d="' + area + '" fill="' + cOrWash + '"/>');
+    out.push('<path d="' + d + '" fill="none" stroke="' + cOr +
+      '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>');
+  }
+  if (!pendingModel) {
+    let d = '', started = false;
+    for (let i = 0; i < T; i++) {
+      if (r.ceAtTarget[i] == null) continue;
+      d += (started ? ' L' : 'M') + x(i).toFixed(1) + ' ' + yB(r.ceAtTarget[i]).toFixed(1);
+      started = true;
+    }
+    if (started) {
+      out.push('<path d="' + d + '" fill="none" stroke="' + cCe +
+        '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>');
+    }
+  }
+
+  /* --------------------------------- upper panel: the claim curve ----- */
+  if (!pendingModel) {
+    let d = 'M' + x(0).toFixed(1) + ' ' + yA(act[0]).toFixed(1);
+    for (let i = 1; i < T; i++) d += ' L' + x(i).toFixed(1) + ' ' + yA(act[i]).toFixed(1);
+    const area = d + ' L' + x(T - 1).toFixed(1) + ' ' + yA(0).toFixed(1) +
+                 ' L' + x(0).toFixed(1) + ' ' + yA(0).toFixed(1) + ' Z';
+    out.push('<path d="' + area + '" fill="' + cActWash + '"/>');
+    out.push('<path d="' + d + '" fill="none" stroke="' + cAct +
+      '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>');
+  }
+
+  /* phase-mean levels: the drop, drawn as two plateaus. This is the
+   * ratio in the readout, made visible on the curve it comes from. */
+  if (isInstrument && !pendingModel) {
+    const levels = [
+      ['memorize', WARMUP_LEN, WARMUP_LEN + WORD_LEN - 1],
+      ['repeat', WARMUP_LEN + WORD_LEN, T - 1]
+    ];
+    for (const [phase, i0, i1] of levels) {
+      if (i1 < i0) continue;
+      const m = phaseMean(act, r.repeats, phase);
+      if (m == null) continue;
+      const xa = (x(i0) + x(Math.max(i0 - 1, 0))) / 2;
+      const xb = i1 >= T - 1 ? padL + plotW : (x(i1) + x(i1 + 1)) / 2;
+      const yy = yA(m);
+      line(xa, yy, xb, yy, cAct, 2, ' opacity="0.42"');
+      if (xb - xa > 30) {
+        out.push('<text x="' + ((xa + xb) / 2).toFixed(1) + '" y="' + (yy - 6).toFixed(1) +
+          '" fill="' + cInk2 + '" font-size="10.5" font-weight="600" text-anchor="middle" ' +
+          'font-family="' + FONT_MONO + '" stroke="' + cSurface +
+          '" stroke-width="3" paint-order="stroke">' + pct(m) + '</text>');
+      }
+    }
+  }
+
+  if (!pendingModel) {
+    /* endpoint marker on the claim curve, with a 2px surface ring */
+    out.push('<circle cx="' + x(T - 1).toFixed(1) + '" cy="' + yA(act[T - 1]).toFixed(1) +
+      '" r="4" fill="' + cAct + '" stroke="' + cSurface + '" stroke-width="2"/>');
+
+    /* ----------------------------- token 0: a code artifact, annotated */
+    out.push('<circle cx="' + x(0).toFixed(1) + '" cy="' + yA(0).toFixed(1) +
+      '" r="3.5" fill="none" stroke="' + cAct + '" stroke-width="1.5"/>');
+    out.push('<text x="' + (x(0) + 9).toFixed(1) + '" y="' + (yA(0) - 7).toFixed(1) +
+      '" fill="' + cInk3 + '" font-size="9.5" font-family="' + FONT_MONO +
+      '" stroke="' + cSurface + '" stroke-width="3" paint-order="stroke">' +
+      esc(narrow ? 'tok 0 = 0.0%' : 'token 0 = 0.0% (attends to nothing)') + '</text>');
+  }
+
+  /* --------------------------------------------- shared x-axis ------- */
+  line(padL, bTop + hB, padL + plotW, bTop + hB, cAxis, 1);
+  for (const i of pickXTicks(T, plotW, isInstrument)) {
+    const xx = x(i);
+    line(xx, bTop + hB, xx, bTop + hB + 4, cAxis, 1);
+    text(xx, bTop + hB + 15, String(i), cInk3, 9.5, 'middle');
+  }
+  out.push('<text x="' + (padL + plotW) + '" y="' + (bTop + hB + 28) + '" fill="' + cInk3 +
+    '" font-size="9.5" text-anchor="end" font-family="' + FONT_MONO +
+    '" letter-spacing="0.06em">TOKEN INDEX &#8594;</text>');
+
+  /* --------------------------------------------- crosshair layer ----- */
+  out.push('<g id="crosshair" style="display:none">' +
+    '<line id="chLine" y1="' + aTop + '" y2="' + (bTop + hB) + '" stroke="' + cAxis +
+    '" stroke-width="1"/>' +
+    '<circle id="chA" r="4" fill="' + cAct + '" stroke="' + cSurface + '" stroke-width="2"/>' +
+    '<circle id="chB" r="4" fill="' + cCe + '" stroke="' + cSurface + '" stroke-width="2"/>' +
+    '<circle id="chC" r="4" fill="' + cOr + '" stroke="' + cSurface + '" stroke-width="2"/>' +
+    '</g>');
+
+  /* hit layer: the pointer only has to be closest, never dead-centre */
+  out.push('<rect id="hit" x="' + padL + '" y="' + aTop + '" width="' + plotW +
+    '" height="' + (bTop + hB - aTop) + '" fill="transparent" style="cursor:crosshair"/>');
+
+  svg.innerHTML = out.join('');
+
+  /* stash geometry for the hover layer */
+  svg._geom = { x: x, yA: yA, yB: yB, padL: padL, plotW: plotW, T: T, aTop: aTop, bTop: bTop, hB: hB };
+  attachHover();
+}
+
+
+/* ---------------------------------------------------- hover + tooltip */
+function attachHover() {
+  const svg = el.svg;
+  const hit = svg.querySelector('#hit');
+  if (!hit) return;
+
+  const move = (evt) => {
+    const g = svg._geom;
+    const rect = svg.getBoundingClientRect();
+    const px = (evt.clientX - rect.left) * (svg.viewBox.baseVal.width / rect.width);
+    const frac = (px - g.padL) / g.plotW;
+    let i = Math.round(frac * (g.T - 1));
+    i = Math.max(0, Math.min(g.T - 1, i));
+    setHover(i);
+  };
+
+  hit.addEventListener('pointermove', move);
+  hit.addEventListener('pointerdown', move);
+  hit.addEventListener('pointerleave', () => setHover(null));
+}
+
+function setHover(i) {
+  state.hover = i;
+  const svg = el.svg;
+  const g = svg._geom;
+  const cross = svg.querySelector('#crosshair');
+  const r = state.result;
+  if (!g || !cross || !r) return;
+
+  if (i == null || r.pending) {
+    cross.style.display = 'none';
+    el.tooltip.hidden = true;
+    return;
+  }
+
+  const act = r.activeFraction[state.layer][i];
+  const xx = g.x(i);
+  cross.style.display = '';
+  svg.querySelector('#chLine').setAttribute('x1', xx);
+  svg.querySelector('#chLine').setAttribute('x2', xx);
+
+  const dotA = svg.querySelector('#chA');
+  dotA.setAttribute('cx', xx); dotA.setAttribute('cy', g.yA(act));
+
+  const dotB = svg.querySelector('#chB');
+  const ce = r.ceAtTarget[i];
+  if (ce == null) { dotB.style.display = 'none'; }
+  else { dotB.style.display = ''; dotB.setAttribute('cx', xx); dotB.setAttribute('cy', g.yB(ce)); }
+
+  const dotC = svg.querySelector('#chC');
+  if (!r.oracle) { dotC.style.display = 'none'; }
+  else { dotC.style.display = ''; dotC.setAttribute('cx', xx); dotC.setAttribute('cy', g.yB(r.oracle[i])); }
+
+  buildTooltip(i, xx);
+}
+
+function buildTooltip(i, xx) {
+  const r = state.result;
+  const tip = el.tooltip;
+  const act = r.activeFraction[state.layer][i];
+  const count = r.activeCounts[state.layer][i];
+  const ce = r.ceAtTarget[i];
+
+  tip.textContent = '';
+
+  const head = document.createElement('div');
+  head.className = 'tip__head';
+  const tok = document.createElement('span');
+  tok.className = 'tip__tok'; tok.textContent = 't=' + i;
+  const letter = document.createElement('span');
+  letter.className = 'tip__letter'; letter.textContent = letterOf(r.tokens[i]);
+  head.append(tok, letter);
+  if (r.mode === 'instrument') {
+    const ph = document.createElement('span');
+    ph.className = 'tip__phase'; ph.textContent = phaseAt(i, r.repeats);
+    head.append(ph);
+  }
+  tip.append(head);
+
+  const row = (color, value, name) => {
+    const d = document.createElement('div');
+    d.className = 'tip__row';
+    const k = document.createElement('span');
+    k.className = 'tip__key'; k.style.background = color;
+    const v = document.createElement('span');
+    v.className = 'tip__val'; v.textContent = value;
+    const n = document.createElement('span');
+    n.className = 'tip__name'; n.textContent = name;
+    d.append(k, v, n);
+    tip.append(d);
+  };
+
+  row(cssVar('--s-act'), pct(act) + '  (' + count + '/' + N_TOTAL + ')', 'active');
+  row(cssVar('--s-ce'), ce == null ? '—' : bits(ce) + ' bits', 'model CE');
+  if (r.oracle) row(cssVar('--s-oracle'), bits(r.oracle[i]) + ' bits', 'oracle');
+
+  if (i === 0) {
+    const note = document.createElement('div');
+    note.className = 'tip__note';
+    note.textContent = 'Token 0 attends to nothing, so it is 0.0% by construction, and nothing predicted it.';
+    tip.append(note);
+  }
+
+  tip.hidden = false;
+  const wrapW = el.chartWrap.clientWidth;
+  const scale = el.svg.getBoundingClientRect().width / el.svg.viewBox.baseVal.width;
+  const px = xx * scale + 8;
+  const tw = tip.offsetWidth;
+  tip.style.left = (px + tw > wrapW - 6 ? Math.max(6, px - tw - 20) : px) + 'px';
+  tip.style.top = '10px';
+}
+
+/* ======================== READOUT / MEANS / TABLE ===================== */
+
+function updateReadout() {
+  const r = state.result;
+  el.roLayerTag.textContent = 'layer ' + state.layer;
+
+  if (!r) { el.roMem.textContent = el.roRep.textContent = el.roRatio.textContent = '—'; return; }
+
+  const act = r.activeFraction[state.layer];
+
+  if (r.mode === 'sandbox') {
+    let sum = 0, n = 0;
+    for (let i = 1; i < r.T; i++) { sum += act[i]; n++; }
+    el.roMem.parentElement.querySelector('.readout__label').textContent = 'Mean active';
+    el.roMem.textContent = n ? pct(sum / n) : '—';
+    el.roRep.parentElement.hidden = true;
+    el.roRatio.parentElement.hidden = true;
+    document.querySelector('.readout__arrow').hidden = true;
+    return;
+  }
+
+  el.roMem.parentElement.querySelector('.readout__label').textContent = 'Memorize';
+  el.roRep.parentElement.hidden = false;
+  el.roRatio.parentElement.hidden = false;
+  document.querySelector('.readout__arrow').hidden = false;
+
+  const mem = phaseMean(act, r.repeats, 'memorize');
+  const rep = phaseMean(act, r.repeats, 'repeat');
+  el.roMem.textContent = mem == null ? '—' : pct(mem);
+  el.roRep.textContent = rep == null ? '—' : pct(rep);
+  el.roRatio.textContent = (mem == null || rep == null || rep === 0)
+    ? '—' : (mem / rep).toFixed(2) + '×';
+}
+
+function updatePhaseMeans() {
+  const r = state.result;
+  const row = el.phaseMeansRow;
+  row.textContent = '';
+  if (!r) return;
+
+  const act = r.activeFraction[state.layer];
+
+  const pill = (name, value, sub) => {
+    const d = document.createElement('div');
+    d.className = 'pm';
+    const n = document.createElement('span');
+    n.className = 'pm__name'; n.textContent = name;
+    const v = document.createElement('span');
+    v.className = 'pm__val'; v.textContent = value;
+    d.append(n, v);
+    if (sub) {
+      const s = document.createElement('span');
+      s.className = 'pm__n'; s.textContent = sub;
+      d.append(s);
+    }
+    row.append(d);
+  };
+
+  if (r.mode === 'sandbox') {
+    let sum = 0, n = 0;
+    for (let i = 1; i < r.T; i++) { sum += act[i]; n++; }
+    pill('mean active', n ? pct(sum / n) : '—', 'tokens 1–' + (r.T - 1));
+    pill('compute', r.ms.toFixed(0) + ' ms', 'T = ' + r.T);
+    return;
+  }
+
+  const warm = phaseMean(act, r.repeats, 'warmup');
+  const mem = phaseMean(act, r.repeats, 'memorize');
+  const rep = phaseMean(act, r.repeats, 'repeat');
+  pill('warm-up', warm == null ? '—' : pct(warm), 'tokens 1–' + (WARMUP_LEN - 1));
+  pill('memorize', mem == null ? '—' : pct(mem), 'tokens ' + WARMUP_LEN + '–' + (WARMUP_LEN + WORD_LEN - 1));
+  pill('repeat', rep == null ? '—' : pct(rep),
+    r.repeats > 1 ? 'tokens ' + (WARMUP_LEN + WORD_LEN) + '–' + (r.T - 1) : 'none at 1 repeat');
+  pill('compute', r.ms.toFixed(0) + ' ms', 'T = ' + r.T);
+}
+
+function updateTable() {
+  if (el.tableView.hidden) return;
+  const r = state.result;
+  const body = el.tableBody;
+  body.textContent = '';
+  if (!r) return;
+
+  const act = r.activeFraction[state.layer];
+  const counts = r.activeCounts[state.layer];
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < r.T; i++) {
+    const tr = document.createElement('tr');
+    if (i === 0) tr.className = 'is-tok0';
+    const cells = [
+      String(i),
+      letterOf(r.tokens[i]),
+      r.mode === 'instrument' ? phaseAt(i, r.repeats) : '—',
+      pct(act[i]),
+      String(counts[i]),
+      r.ceAtTarget[i] == null ? '—' : bits(r.ceAtTarget[i]),
+      r.oracle ? bits(r.oracle[i]) : '—'
+    ];
+    for (const c of cells) {
+      const td = document.createElement('td');
+      td.textContent = c;
+      tr.append(td);
+    }
+    frag.append(tr);
+  }
+  body.append(frag);
+}
+
+/* ============================== DRIVER =============================== */
+
+let refreshHandle = { raf: 0, timer: 0, done: true };
+
+/* The forward pass blocks the main thread for ~50-120 ms, so the work is
+ * deferred by one frame: the control's new state paints first, then the model
+ * runs. requestAnimationFrame alone is not enough - it does not fire in a
+ * background tab, which would leave a queued control change unapplied until
+ * the reader came back. A short timer backstops it and whichever fires first
+ * wins, so a change is never merely queued. */
+function refresh() {
+  el.readout.classList.add('is-stale');
+  cancelAnimationFrame(refreshHandle.raf);
+  clearTimeout(refreshHandle.timer);
+
+  const h = { raf: 0, timer: 0, done: false };
+  refreshHandle = h;
+
+  const run = () => {
+    if (h.done) return;
+    h.done = true;
+    cancelAnimationFrame(h.raf);
+    clearTimeout(h.timer);
+
+    const r = compute();
+    if (r) state.result = r;
+    el.readout.classList.remove('is-stale');
+    renderChart();
+    updateReadout();
+    updatePhaseMeans();
+    updateTable();
+    updateMeta();
+  };
+
+  h.raf = requestAnimationFrame(run);
+  h.timer = setTimeout(run, 60);
+}
+
+function updateMeta() {
+  const T = state.mode === 'sandbox'
+    ? state.sandboxText.length
+    : WARMUP_LEN + WORD_LEN * state.repeats;
+  el.repeatMeta.textContent = 'T = ' + T + ' tokens';
+  el.layerMeta.textContent = state.layer === 0
+    ? 'layer 0 is where the claim fails'
+    : 'weights are identical at every layer';
+  el.weightsMeta.textContent = state.weights === 'trained'
+    ? '2200 steps · final loss 0.4964'
+    : 'random init, seed 0 · never trained';
+  if (state.mode === 'sandbox') {
+    el.sandboxMsg.textContent = state.sandboxText.length + ' letters';
+  }
+}
+
+/* =============================== SETUP =============================== */
+
+function setLayer(n) {
+  state.layer = n;
+  for (const b of el.layerSeg.querySelectorAll('button')) {
+    const on = Number(b.dataset.layer) === n;
+    b.classList.toggle('is-active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+  /* layer needs no recompute: one forward pass already measured all four */
+  refresh();
+}
+
+function setWeights(kind) {
+  state.weights = kind;
+  for (const b of el.weightsSeg.querySelectorAll('button')) {
+    const on = b.dataset.weights === kind;
+    b.classList.toggle('is-active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+  if (models[kind]) { refresh(); return; }
+
+  showStatus('Loading the ' + kind + ' weights (1.5 MB, once)…', false);
+  getModel(kind).then(() => { hideStatus(); refresh(); })
+    .catch((e) => showStatus(loadErrorText(e), true));
+}
+
+/* Rebuilds the two notes under the chart. Both are written from scratch so the
+ * two modes never leave a fragment of the other one's wording behind. */
+function writeNotes(sandbox) {
+  const b = (t) => { const n = document.createElement('b'); n.textContent = t; return n; };
+  const c = (t) => { const n = document.createElement('code'); n.textContent = t; return n; };
+  const t = (s) => document.createTextNode(s);
+
+  el.noteTok0.textContent = '';
+  el.noteTok0.append(
+    b('Token 0 reads exactly 0.0%'),
+    t(' in every layer — attention is '),
+    c('tril(diagonal=-1)'),
+    t(', so token 0 attends to nothing. That is a property of the code, not a measurement, and it is '),
+    b('excluded'),
+    t(sandbox ? ' from the mean below.' : ' from the warm-up mean below.')
+  );
+
+  el.noteAlign.textContent = '';
+  if (sandbox) {
+    el.noteAlign.append(
+      t('Cross-entropy is plotted against '),
+      b('the token being predicted'),
+      t('. Token 0 has none, because nothing predicted it.')
+    );
+  } else {
+    el.noteAlign.append(
+      t('Cross-entropy is plotted against '),
+      b('the token being predicted'),
+      t(', so it lines up with oracle surprisal. The forward pass itself indexes it by the position making the prediction.')
+    );
+  }
+}
+
+function setMode(mode) {
+  state.mode = mode;
+  const sandbox = mode === 'sandbox';
+  el.tabInstrument.classList.toggle('is-active', !sandbox);
+  el.tabSandbox.classList.toggle('is-active', sandbox);
+  el.tabInstrument.setAttribute('aria-selected', String(!sandbox));
+  el.tabSandbox.setAttribute('aria-selected', String(sandbox));
+  el.offdist.hidden = !sandbox;
+  el.sandboxControl.hidden = !sandbox;
+  document.getElementById('ctrlRepeats').hidden = sandbox;
+  document.getElementById('ctrlWord').hidden = sandbox;
+  el.figureSub.textContent = sandbox
+    ? 'Your own letters. No oracle curve is drawn — off-distribution text has no generating process to be surprised by.'
+    : 'One cycle of the Section 6.4 protocol, token by token.';
+  /* the oracle legend entry is meaningless off-distribution */
+  el.legend.children[0].classList.toggle('is-dim', sandbox);
+
+  /* the notes under the chart describe the instrument's phases, which the
+   * sandbox does not have - say the true thing in each mode */
+  writeNotes(sandbox);
+  refresh();
+}
+
+function showStatus(msg, isError) {
+  el.status.hidden = false;
+  el.status.classList.toggle('is-error', !!isError);
+  el.statusText.textContent = msg;
+  el.status.querySelector('.spinner').style.display = isError ? 'none' : '';
+}
+
+function hideStatus() { el.status.hidden = true; }
+
+function loadErrorText(e) {
+  const local = location.protocol === 'file:';
+  return local
+    ? 'The weight files cannot be read from a file:// URL. Serve the folder over HTTP — for example: python -m http.server 8000 — then open http://localhost:8000.'
+    : 'Could not load the weight files (' + e.message + '). Check that weights_trained.json sits beside index.html.';
+}
+
+function wireControls() {
+  /* layer -------------------------------------------------------- */
+  el.layerSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b) setLayer(Number(b.dataset.layer));
+  });
+  el.layerSeg.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const next = Math.max(0, Math.min(3, state.layer + (e.key === 'ArrowRight' ? 1 : -1)));
+    setLayer(next);
+    el.layerSeg.querySelector('button.is-active').focus();
+  });
+
+  /* repeats ------------------------------------------------------ */
+  el.repeatSlider.addEventListener('input', () => {
+    state.repeats = Number(el.repeatSlider.value);
+    el.repeatOut.textContent = state.repeats;
+    refresh();
+  });
+
+  /* the word: exactly 8 letters, a-z ----------------------------- */
+  el.wordInput.addEventListener('input', () => {
+    const raw = el.wordInput.value;
+    const clean = raw.toLowerCase().replace(/[^a-z]/g, '').slice(0, WORD_LEN);
+    if (clean !== raw) {
+      const at = el.wordInput.selectionStart;
+      el.wordInput.value = clean;
+      try { el.wordInput.setSelectionRange(at - (raw.length - clean.length), at - (raw.length - clean.length)); }
+      catch (_) { /* selection restore is best-effort */ }
+    }
+    if (clean.length === WORD_LEN) {
+      el.wordInput.classList.remove('is-bad');
+      el.wordMsg.classList.remove('is-bad');
+      el.wordMsg.textContent = '8 letters, a–z';
+      state.word = clean;
+      refresh();
+    } else {
+      /* hold the previous render rather than blanking the chart */
+      el.wordInput.classList.add('is-bad');
+      el.wordMsg.classList.add('is-bad');
+      el.wordMsg.textContent = 'needs ' + (WORD_LEN - clean.length) + ' more letter' +
+        (WORD_LEN - clean.length === 1 ? '' : 's') + ' — showing “' + state.word + '”';
+    }
+  });
+
+  /* weights ------------------------------------------------------ */
+  el.weightsSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (b) setWeights(b.dataset.weights);
+  });
+
+  /* sandbox ------------------------------------------------------ */
+  el.sandboxInput.addEventListener('input', () => {
+    const clean = el.sandboxInput.value.toLowerCase().replace(/[^a-z]/g, '').slice(0, 96);
+    if (clean !== el.sandboxInput.value) el.sandboxInput.value = clean;
+    if (clean.length >= 2) { state.sandboxText = clean; refresh(); }
+    else { el.sandboxMsg.textContent = 'type at least 2 letters'; }
+  });
+
+  /* tabs --------------------------------------------------------- */
+  el.tabInstrument.addEventListener('click', () => setMode('instrument'));
+  el.tabSandbox.addEventListener('click', () => setMode('sandbox'));
+
+  /* table -------------------------------------------------------- */
+  el.tableToggle.addEventListener('click', () => {
+    const open = el.tableView.hidden;
+    el.tableView.hidden = !open;
+    el.tableToggle.setAttribute('aria-expanded', String(open));
+    el.tableToggle.textContent = open ? 'Hide data table' : 'Show data table';
+    updateTable();
+  });
+
+  /* keyboard on the chart ---------------------------------------- */
+  el.svg.addEventListener('keydown', (e) => {
+    const r = state.result;
+    if (!r) return;
+    let i = state.hover == null ? 0 : state.hover;
+    if (e.key === 'ArrowRight') i = Math.min(r.T - 1, i + 1);
+    else if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+    else if (e.key === 'Home') i = 0;
+    else if (e.key === 'End') i = r.T - 1;
+    else if (e.key === 'Escape') { setHover(null); return; }
+    else return;
+    e.preventDefault();
+    setHover(i);
+  });
+  el.svg.addEventListener('blur', () => setHover(null));
+}
+
+/* theme toggle: auto -> light -> dark -> auto */
+function wireTheme() {
+  const order = ['auto', 'light', 'dark'];
+  let idx = 0;
+  try {
+    const saved = localStorage.getItem('bdh-theme');
+    if (saved && order.includes(saved)) idx = order.indexOf(saved);
+  } catch (_) { /* private mode: fall through to auto */ }
+
+  const apply = () => {
+    const mode = order[idx];
+    if (mode === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', mode);
+    el.themeToggleLabel.textContent = mode;
+    try { localStorage.setItem('bdh-theme', mode); } catch (_) { /* ignore */ }
+    if (state.result) renderChart();
+  };
+
+  apply();
+  el.themeToggle.addEventListener('click', () => { idx = (idx + 1) % order.length; apply(); });
+
+  /* The chart bakes theme colours into SVG attributes at render time, so a
+   * change of system theme while the page is open has to trigger a repaint.
+   * Without this the curves keep the previous theme's palette on the new
+   * surface - dark gridlines on a light ground. */
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onSchemeChange = () => { if (state.result) renderChart(); };
+  if (mq.addEventListener) mq.addEventListener('change', onSchemeChange);
+  else if (mq.addListener) mq.addListener(onSchemeChange);
+}
+
+/* the sticky tab strip must sit exactly under the sticky claim bar */
+function syncStickyOffsets() {
+  const h = el.claimBar.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--claim-h', h + 'px');
+}
+
+function wireScrollCondense() {
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      el.claimBar.classList.toggle('is-condensed', window.scrollY > 64);
+      syncStickyOffsets();
+      ticking = false;
+    });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+}
+
+function wireResize() {
+  let t = 0;
+  const ro = new ResizeObserver(() => {
+    clearTimeout(t);
+    t = setTimeout(() => { syncStickyOffsets(); if (state.result) renderChart(); }, 90);
+  });
+  ro.observe(el.chartWrap);
+  ro.observe(el.claimBar);
+}
+
+/* ------------------------------------------------------------- boot */
+async function boot() {
+  wireControls();
+  wireTheme();
+  wireScrollCondense();
+  syncStickyOffsets();
+  updateMeta();
+
+  el.buildStamp.textContent =
+    'n = 1024 neurons · d = 32 · 4 layers · 100,352 parameters, shared across all four.';
+
+  /* Draw the analytic curve before any model exists. Oracle surprisal
+   * depends only on the protocol's lengths, never on the letters or the
+   * weights, so the page is never a blank canvas. */
+  state.result = {
+    tokens: new Array(WARMUP_LEN + WORD_LEN * state.repeats).fill(0),
+    T: WARMUP_LEN + WORD_LEN * state.repeats,
+    activeFraction: [0, 1, 2, 3].map(() => new Float64Array(WARMUP_LEN + WORD_LEN * state.repeats)),
+    activeCounts: [0, 1, 2, 3].map(() => new Int32Array(WARMUP_LEN + WORD_LEN * state.repeats)),
+    ceAtTarget: new Array(WARMUP_LEN + WORD_LEN * state.repeats).fill(null),
+    oracle: oracleSurprisalBits(WARMUP_LEN, WORD_LEN, state.repeats),
+    ms: 0, mode: 'instrument', repeats: state.repeats,
+    pending: true   // no model yet: draw the frame and the analytic curve only
+  };
+  renderChart();
+  wireResize();
+
+  try {
+    await getModel('trained');
+    hideStatus();
+    state.result = null;
+    computeCache.clear();
+    refresh();
+  } catch (e) {
+    showStatus(loadErrorText(e), true);
+  }
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
