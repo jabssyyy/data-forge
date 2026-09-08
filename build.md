@@ -154,6 +154,11 @@ Also fix, in the same pass:
 
 If the rerun lands materially off these, **report the new numbers** — do not retrofit the old ones.
 
+> **Outcome (2026-09-08): the rerun did land off these, and the new numbers were shipped.**
+> Measured: layer 0 = 0.92×, layer 1 = 1.96×, **layer 2 = 3.10×** (15.77% → 5.08%), layer 3 = 1.91×,
+> final loss 0.4964. The table above is the *pre-rerun expectation* and is kept only as history —
+> `results.json` is the shipped evidence. Nothing was retrofitted.
+
 ### 4.4 Weight export format
 
 ```json
@@ -165,7 +170,7 @@ If the rerun lands materially off these, **report the new numbers** — do not r
   "decoder":    [1024][32],        // (heads*N) × D
   "lm_head":    [32][32],          // D × vocab
   "warmup":     [13 ints],         // the fixed warm-up letters
-  "provenance": {"trained_steps":2200,"seed":0,"final_loss":0.434}
+  "provenance": {"trained_steps":2200,"seed":0,"final_loss":0.4964}
 }
 ```
 
@@ -282,7 +287,7 @@ rope(v)[t][i+1]   = v[t][i+1]*cos(phase) + v[t][i]*sin(phase)   // i odd
 ## 9. Disclosed limitations — all seven, visible in the artifact
 
 1. **Layer 0 shows no effect.** Framed as *confirming* the paper, which states the effect appears in "higher layers" (§6.4) — **not** as our own discovery.
-2. **64× neuron shrink** (65536 → 1024). Our absolute activity levels run roughly 3× the paper's; the *ratio* is what reproduces, not the absolute percentages.
+2. **64× neuron shrink** (65536 → 1024). Our absolute activity levels run roughly **2–3×** the paper's — memorize 15.77% against the paper's 4.0–7.5%, repeat 5.08% against ~2.5% — so the *ratio* is what reproduces, not the absolute percentages.
 3. **Synthetic task only.** This says nothing about BDH on natural language. See §11.
 4. **Token 0 always reads 0.0%**, a consequence of `tril(diagonal=-1)` — a code artifact, not a finding.
 5. **Independent shrunk reimplementation**, faithful to `pathwaycom/bdh` with a measurement hook added. **Not an official BDH model** (PS requires this label explicitly).
@@ -317,13 +322,17 @@ True, memorable, and it demonstrates exactly the behaviour the 25-point technica
 
 ## 12. The fence — what we are deliberately NOT building
 
-Cut permanently. Each of these was considered and rejected:
+> **Superseded in part. `BUILD-PLAN.md` §14 is the current fence.** Two items below were
+> later re-authorised by explicit decision and **are in the shipped artifact**. This section
+> is retained as the original reasoning, not as a description of what was built. See the
+> correction log (§14) and `docs/execution-status.md`.
 
-- **RoPE frequency buckets** (Fig. 14b) — requires explaining RoPE to an audience defined as not knowing RoPE.
-- **A second contrast model** (tiny Transformer) — killed on time risk; the within-model 15.9% → 4.8% drop on identical weights already shows nothing was configured.
-- **Direction B** (synaptic memory / Figs. 12–13) — needs Europarl-scale bilingual data and a from-scratch recurrent-state reimplementation.
-- **Direction C** (KV-cache comparison) — two models to train and instrument.
-- Training in the browser · 3D neuron graphics · a general "BDH playground" · any second topic · any backend.
+- **RoPE frequency buckets** (Fig. 14b) — requires explaining RoPE to an audience defined as not knowing RoPE. *(Still fenced. Not built.)*
+- **A second contrast model** (tiny Transformer) — originally killed on time risk. **RE-AUTHORISED AND BUILT.** See `prompt-transformer-comparison.md` for the decision and `docs/transformer-protocol.md` / `docs/transformer-results.md` for the protocol and measurements. It ships as a *contextualizing control*, never as part of the claim, which remains BDH-only. Trained layer 2 gives 1.581590×, random 0.998273×; parameter counts, attention operators/masks, RoPE widths and residual paths all differ, so no ranking is claimed.
+- **Wiring / synaptic-state visualisation** — originally excluded on the grounds that no honest wiring diagram exists to draw (shared, dense weights). **RE-AUTHORISED AND BUILT** as a separate memory lab: a centered projection of the computed context state, explicitly *not* the paper's σ and not a semantic neuron graph, plus a hypothetical λ=0.96 decay intervention labelled as an intervention. See `docs/memory-explainer.md`.
+- **Direction B** (synaptic memory / Figs. 12–13) — needs Europarl-scale bilingual data and a from-scratch recurrent-state reimplementation. *(Still fenced. Not built.)*
+- **Direction C** (KV-cache comparison) — two models to train and instrument. *(Still fenced. Not built.)*
+- Training in the browser · 3D neuron graphics · a general "BDH playground" · any second topic · any backend. *(Still fenced. Not built.)*
 
 **Test for any new idea:** does it help the learner reproduce the claim or find its boundary? If not, it's decoration.
 
@@ -342,3 +351,10 @@ Cut permanently. Each of these was considered and rejected:
 - **"fact" wording.** The paper writes *"8 repetitions of an 8-letter random word ('fact')"* and later *"fact introduction"*, *"fact memorization effect"*. "fact" is the paper's **name for the memorized item**, not a literal example word — the word is random, and "fact" is four letters, not eight. An earlier note in this project called it a literal example; that was wrong. Use "the memorized word" or "the fact" in all copy.
 - **`xy_sparse` vs `y_sparse`.** Confirmed against Definition 4 in the paper, not just the source code: `y := (D_y·LN(a*))⁺ ⊙ x`. The `⊙ x` gate means the code's `xy_sparse` is the paper's `y`.
 - **Layer-0 framing.** Changed from "our discovered limitation" to "confirms the paper's own statement about higher layers."
+
+### Fence reversals — recorded 2026-09-08
+
+- **The tiny Transformer contrast model was un-fenced and built.** §12 said "killed on time risk"; the shipped artifact contains one. This document contradicted the artifact for the life of the build and has now been corrected in place. The decision record is `prompt-transformer-comparison.md`; the current fence is `BUILD-PLAN.md` §14, which never listed this item. The claim itself was not widened — it is still BDH-only, and the Transformer is labelled a control.
+- **Wiring/state visualisation was un-fenced and built** as the memory lab, superseding the "no honest wiring diagram exists" reasoning. It ships with explicit boundaries: a centered projection of computed context, not the paper's σ, not semantic neurons, and a λ=0.96 decay path labelled a hypothetical intervention rather than native forgetting.
+- **Limitation 2's multiplier corrected.** "Roughly 3× the paper's absolute levels" was never measured; the shipped numbers give 15.77% vs 4.0–7.5% (≈2.7×) and 5.08% vs ~2.5% (≈2.0×). Restated as 2–3× with both comparisons shown.
+- **Stale fence numbers removed.** §12 quoted "15.9% → 4.8%" from the superseded 2026-09-06 run. The shipped figures are 15.77% → 5.08%.
