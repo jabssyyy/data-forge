@@ -146,8 +146,8 @@ fs.mkdirSync(output, { recursive: true });
   await page.locator("#tabInstrument").click();
   await page.locator("#repeatSlider").fill("8");
   await page.locator("#repeatSlider").dispatchEvent("input");
-  await page.locator('[data-weights="trained"]').click();
-  await page.locator('[data-layer="2"]').click();
+  await page.locator('button[data-weights="trained"]').click();
+  await page.locator('button[data-layer="2"]').click();
   await page.waitForFunction(() => state.result && state.result.T === 77);
   const viewports = [];
   for (const theme of ["light", "dark"]) {

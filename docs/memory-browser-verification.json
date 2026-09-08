@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "checks": [
+    "Global token synchronizes graph; node cohort stable over playback; finite metrics",
+    "Damping mode visibly distinguished; graph slider synchronizes global token; CE matches actual modified output and conclusion limited to this token",
+    "Decay .80/.96/1 leaves main instrument unchanged; lambda1 CE matches native; rapid pending mode changes settle to native",
+    "Memory playback advances, pauses, and stops at sequence end",
+    "Missing-model fault clears and hides memory; restoring model recovers without stale graph",
+    "Weight, layer, and head transitions remain valid",
+    "Nodes and edges receive keyboard focus and Enter activation",
+    "No horizontal page overflow at desktop, 390px, and 320px in both themes"
+  ],
+  "screenshots": [
+    "test-results/memory/memory-1440-light.png",
+    "test-results/memory/memory-1440-dark.png",
+    "test-results/memory/memory-390-light.png",
+    "test-results/memory/memory-390-dark.png",
+    "test-results/memory/memory-320-light.png",
+    "test-results/memory/memory-320-dark.png"
+  ],
+  "url": "http://127.0.0.1:8000/_site/",
+  "checked_at": "2026-09-08T12:37:24.104974+00:00",
+  "browser": "152.0.7977.82"
+}

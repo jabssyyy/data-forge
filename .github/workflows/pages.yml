@@ -25,6 +25,7 @@ jobs:
       - name: Verify the shipped numerical engines
         run: |
           node parity_test.js
+          node memory_test.js
           if [ -f transformer_parity_test.js ]; then node transformer_parity_test.js; fi
       - name: Assemble the static artifact
         run: python3 scripts/build_site.py

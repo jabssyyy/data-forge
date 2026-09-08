@@ -16,6 +16,8 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
     />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="graph-view.css" />
+    <link rel="stylesheet" href="memory-lab.css" />
   </head>
   <body>
     <a class="skip-link" href="#chartPanel">Skip to the instrument</a>
@@ -62,6 +64,9 @@
           Sandbox
         </button>
         <span class="tabs__spacer"></span>
+        <a class="memory-nav-link" href="#memoryLab"
+          >Memory graph <span aria-hidden="true">↗</span></a
+        >
         <button
           class="theme-toggle"
           id="themeToggle"
@@ -469,14 +474,269 @@
           <span class="badge badge--pre">ANIMATED · LIVE-COMPUTED TENSOR</span>
         </div>
         <p class="note">
-          Token indices start at 0. Playback visits an existing measured tensor
-          at 8 tokens/second; it does not run inference each frame. Cell order:
-          head, then neuron. Brightness does not encode magnitude. Matching cell
-          positions do not imply corresponding neurons across models.
+          “Memorize” labels the first encounter with the word; the label does
+          not prove successful recall. Token indices start at 0. Playback visits
+          an existing measured tensor at 8 tokens/second; it does not run
+          inference each frame. Cell order: head, then neuron. Brightness does
+          not encode magnitude. Matching cell positions do not imply
+          corresponding neurons across models.
         </p>
       </section>
       <div class="section-label">
-        <span>02 / THE MECHANISM</span><span>STRUCTURE ≠ CAUSAL PROOF</span>
+        <span>02 / THE MEMORY LAB</span
+        ><span>WATCH THE STATE, THEN TEST THE STORY</span>
+      </div>
+      <section
+        class="memory-lab"
+        id="memoryLab"
+        aria-labelledby="memoryTitle"
+        data-memory-mode="native"
+      >
+        <div class="memory-lab__intro">
+          <div>
+            <p class="kicker">EXPERIENCE → MEMORY → PREDICTION</p>
+            <h2 id="memoryTitle">Watch a memory<br /><em>take shape.</em></h2>
+          </div>
+          <div>
+            <p class="memory-lab__lead">
+              A token leaves a trace. Later tokens read it. Repetition can
+              reinforce a connection; competing writes can weaken it.
+            </p>
+            <p>
+              This is a live, measured projection of the model’s working
+              memory—not literal synapses. Follow the same connections through
+              your sequence, then test what happens when we deliberately add
+              forgetting.
+            </p>
+          </div>
+        </div>
+        <div class="memory-lab__definitions">
+          <span><b>Weights</b> The learned rules. Fixed here.</span
+          ><span><b>Memory</b> A summary of earlier tokens.</span
+          ><span><b>Activity</b> Which gates fire right now.</span>
+        </div>
+        <div class="memory-lab__controls">
+          <div
+            class="memory-lab__mode"
+            role="group"
+            aria-label="Memory update experiment"
+          >
+            <button id="memoryModeNative" type="button" aria-pressed="true">
+              01 · Native memory</button
+            ><button id="memoryModeDecay" type="button" aria-pressed="false">
+              02 · Try memory decay
+            </button>
+          </div>
+          <label class="memory-lab__head" for="memoryHead"
+            >Inspect
+            <select id="memoryHead">
+              <option value="0">Head 0</option>
+            </select></label
+          >
+        </div>
+        <div id="memoryDecayControls" class="memory-lab__decay" hidden>
+          <label for="memoryDecay"
+            >Retain each step
+            <output id="memoryDecayOut" for="memoryDecay">0.96</output></label
+          >
+          <input
+            id="memoryDecay"
+            type="range"
+            min="0.80"
+            max="1"
+            value="0.96"
+            step="0.01"
+            aria-describedby="memoryHalfLife"
+          />
+          <p id="memoryHalfLife">
+            An old write retains half its magnitude after about 17 further
+            updates, before accounting for new writes.
+          </p>
+        </div>
+        <div class="memory-lab__mode-note" id="memoryModeNote">
+          NATIVE CHECKPOINT · λ = 1 · NO EXPLICIT DECAY
+        </div>
+        <div class="memory-lab__player">
+          <button class="primary-btn" id="memoryPlay" type="button" disabled>
+            Play memory
+          </button>
+          <label for="memoryToken"
+            >Token
+            <output id="memoryTokenOut" for="memoryToken">—</output></label
+          >
+          <input
+            id="memoryToken"
+            type="range"
+            min="0"
+            max="76"
+            value="13"
+            disabled
+          />
+          <div class="memory-lab__milestones">
+            <button id="memoryStart" type="button" disabled>Empty memory</button
+            ><button id="memoryRepeat" type="button" disabled>
+              First repeat</button
+            ><button id="memoryLate" type="button" disabled>
+              Late prediction
+            </button>
+          </div>
+        </div>
+        <p class="memory-lab__context" id="memoryContext">
+          Same input, weights and layer as the instrument above.
+        </p>
+        <div id="memoryGraph" hidden></div>
+        <p class="memory-lab__status" id="memoryStatus" role="status">
+          Waiting for the live model…
+        </p>
+        <div class="memory-lab__metrics">
+          <div>
+            <span>Full head memory norm</span><strong id="memoryNorm">—</strong
+            ><small>State magnitude, not prediction quality</small>
+          </div>
+          <div>
+            <span>Active gates · whole layer</span
+            ><strong id="memoryActive">—</strong
+            ><small>Quiet now ≠ deleted</small>
+          </div>
+          <div>
+            <span>Sampled connection changes</span
+            ><strong id="memoryChanges">—</strong
+            ><small>Magnitude ↑ stronger / ↓ weaker</small>
+          </div>
+          <div>
+            <span>Old-write retention · 20 updates</span
+            ><strong id="memoryRetention">100%</strong
+            ><small>λ²⁰ · excludes subsequent writes</small>
+          </div>
+        </div>
+        <div class="memory-lab__interpret">
+          <article>
+            <p class="kicker">WHAT JUST HAPPENED?</p>
+            <h3 id="memoryStoryTitle">Memory is a state, not a spotlight.</h3>
+            <p id="memoryInterpretation">
+              The interpretation will update with the measured memory state.
+            </p>
+          </article>
+          <article>
+            <p class="kicker">IS THAT GOOD OR BAD?</p>
+            <h3>Check the prediction.</h3>
+            <div class="memory-lab__ce">
+              <div>
+                <span>Native next-token error</span
+                ><strong id="memoryNativeCE">—</strong>
+              </div>
+              <div>
+                <span id="memoryCELabel">Selected native prediction</span
+                ><strong id="memoryCE">—</strong>
+              </div>
+            </div>
+            <p id="memoryVerdict">
+              Lower next-token error means more probability on the observed next
+              letter. Stronger connections alone do not tell us whether the
+              answer improved.
+            </p>
+          </article>
+        </div>
+        <div class="memory-lab__reading" aria-labelledby="memoryReadingTitle">
+          <h3 id="memoryReadingTitle">Read it in three moves.</h3>
+          <ol>
+            <li>
+              <b>Follow one connection.</b
+              ><span
+                >Select a line. Its width is the magnitude of a measured memory
+                value. Blue is positive; orange is negative. These signs are
+                coordinates, not good and bad.</span
+              >
+            </li>
+            <li>
+              <b>Separate storage from activity.</b
+              ><span
+                >The right-hand circles are actual gated neurons. Green means
+                active on this token. A quiet circle still exists, and a strong
+                stored connection may contribute little to the current
+                read.</span
+              >
+            </li>
+            <li>
+              <b>Change one rule. Check the cost.</b
+              ><span
+                >Choose “Try memory decay.” Earlier contributions fade by an
+                explicit retention factor. Compare the prediction errors:
+                forgetting may help remove interference or hurt by losing useful
+                context.</span
+              >
+            </li>
+          </ol>
+        </div>
+        <details class="memory-lab__science">
+          <summary>
+            What is real here, and how does it relate to the BDH paper?
+          </summary>
+          <p>
+            The paper develops a graph view of sparse neurons and synaptic
+            memory. This visualisation is a
+            <strong
+              >measured, signed projection of the executable model’s attention
+              memory</strong
+            >, not a literal reproduction of the paper’s biological graph.
+            Left-hand nodes are RoPE cue coordinates; right-hand nodes are
+            selected gated neurons. Neither is assigned an invented word or
+            concept.
+          </p>
+          <p>
+            For one head, the native state is M<sub>t</sub> = Σ<sub>s&lt;t</sub>
+            q<sub>s</sub> ⊗ v<sub>s</sub>. We display B<sub>t</sub> =
+            M<sub>t</sub>C, where C is the centred gate projection. The complete
+            query-weighted sum of B, divided by the attention LayerNorm standard
+            deviation, reconstructs the gate preactivation. The graph shows
+            memory <em>before</em> the selected token writes. Its edge inspector
+            also reports the post-write value.
+          </p>
+          <p>
+            Twelve cue coordinates and twelve gate neurons are selected by their
+            peak native activity over this sequence. The 40 displayed
+            connections are selected by peak native memory magnitude; all 144
+            sampled connections remain in the table. Selection stays fixed
+            during playback and the decay comparison. Omitted coordinates still
+            participate in full inference. Widths share a fixed scale across the
+            sequence and both computed settings.
+          </p>
+          <p>
+            <strong
+              >The checkpoint has no explicit exponential memory decay.</strong
+            >
+            In native mode, a smaller projected value can reflect signed
+            cancellation; a smaller query read can reflect changed cues or
+            positional phase. Neither proves semantic forgetting. “Try memory
+            decay” changes the recurrence to M<sub>t+1</sub> = λM<sub>t</sub> +
+            q<sub>t</sub> ⊗ v<sub>t</sub> and reruns the full model, across
+            every head and layer, with unchanged weights. This optional
+            experiment does not alter the baseline instrument or its published
+            results.
+          </p>
+          <p>
+            Error here is scored on the letter <em>after</em> the selected
+            token. The main instrument aligns error to the target token instead,
+            so compare this panel at t with the main error at t + 1. The final
+            token has no observed successor. The memory norm is the Frobenius
+            norm of the full, unprojected head state; the connection-change
+            counts refer only to the sampled 144 edges.
+          </p>
+          <p class="src">
+            <a href="https://arxiv.org/abs/2509.26507"
+              >The Dragon Hatchling paper ↗</a
+            >
+            ·
+            <a href="https://github.com/pathwaycom/bdh"
+              >Official implementation ↗</a
+            >
+            ·
+            <a href="docs/memory-explainer.md">Derivation and verification ↗</a>
+          </p>
+        </details>
+      </section>
+      <div class="section-label">
+        <span>03 / THE MECHANISM</span><span>STRUCTURE ≠ CAUSAL PROOF</span>
       </div>
       <section class="panel panel--mech">
         <div class="panel__head">
@@ -526,6 +786,11 @@
             >
           </article>
         </div>
+        <p class="figure__sub">
+          ReLU activation sparsity is also studied in language models by
+          <a href="https://arxiv.org/abs/2310.04564">Mirzadeh et al. (2023)</a>;
+          their efficiency results are not measured by this demo.
+        </p>
         <p class="mechanism-note">
           The gate explains how zeros are possible. It does not establish why
           repetition changes activity, guarantee a confidence-driven collapse,
@@ -561,7 +826,7 @@
         </p>
       </section>
       <div class="section-label">
-        <span>03 / THE BOUNDARIES</span><span>READ THE COUNTEREXAMPLES</span>
+        <span>04 / THE BOUNDARIES</span><span>READ THE COUNTEREXAMPLES</span>
       </div>
       <!-- ========================== 5. HONESTY PANEL =========================== -->
       <section class="panel panel--honesty">
@@ -650,6 +915,11 @@
         <p>
           These browser implementations use dense, full-sequence computation.
           Active counts do not measure compute or energy savings.
+        </p>
+        <p class="src">
+          <a href="docs/requirements-audit.md"
+            >Project requirements and evidence audit ↗</a
+          >
         </p>
       </section>
 
@@ -751,6 +1021,9 @@
 
     <script src="bdh.js"></script>
     <script src="transformer.js"></script>
+    <script src="memory.js"></script>
+    <script src="graph-view.js"></script>
+    <script src="memory-lab.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

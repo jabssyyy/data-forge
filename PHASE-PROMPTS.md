@@ -1,3 +1,5 @@
+> **Authorized scope expansion, 2026-09-08:** The user subsequently requested a measured memory graph and explicit beginner interpretation. This overrides the earlier no-wiring fence for a defined, verified projection of computed context state. A separate hypothetical decay experiment is authorized, labelled as an intervention with unchanged weights; it does not alter the baseline claim or imply native forgetting. See `docs/memory-explainer.md` and `docs/memory-verification.json`. Required validation: baseline parity unchanged, projected read/gate reconstruction, clear weight/context/activity distinctions, signed edge selection disclosures, and browser interaction checks before release.
+
 # DataForge — phase-by-phase execution prompts
 
 Prepared 2026-09-08 from all nine Markdown files in this folder and a targeted inspection of the existing code and measurements. This document prepares the work; it does not authorize starting the build until you submit a phase prompt.

@@ -14,6 +14,10 @@ def build(destination):
     destination.mkdir(parents=True, exist_ok=True)
     required = [
         'index.html', 'style.css', 'app.js', 'bdh.js', 'favicon.svg',
+        'memory.js', 'graph-view.js', 'graph-view.css', 'memory-lab.js', 'memory-lab.css',
+        'docs/memory-explainer.md', 'docs/memory-verification.json',
+        'docs/memory-browser-verification.json',
+        'docs/requirements-audit.md',
         'weights_trained.json', 'weights_untrained.json', 'results.json',
         'README.md', 'LICENSE', 'docs/concept-summary.pdf', 'docs/blog.pdf',
         'docs/concept-summary.md', 'docs/blog.md', 'docs/sources.md',

@@ -149,9 +149,22 @@ class BDH {
 
   /* Runs one sequence. Returns per-layer active counts and fractions, the
    * per-token cross-entropy in bits, and the logits.
-   * opts.keepRaw = true also returns the raw xySparse values (parity testing). */
+   * opts.keepRaw = true also returns the raw xySparse values (parity testing).
+   * opts.captureMemory = {layer, head} exposes copies of actual read/write tensors.
+   * opts.memoryDecay < 1 applies an experimental full-model retention intervention;
+   * the default 1 preserves the trained checkpoint's original computation. */
   forward(tokens, opts) {
     const keepRaw = !!(opts && opts.keepRaw);
+    const memoryDecay = opts && opts.memoryDecay !== undefined ? opts.memoryDecay : 1;
+    if (!Number.isFinite(memoryDecay) || memoryDecay <= 0 || memoryDecay > 1) {
+      throw new Error('Memory retention must be in (0, 1]');
+    }
+    const capture = opts && opts.captureMemory;
+    if (capture && (!Number.isInteger(capture.layer) || capture.layer < 0 || capture.layer >= this.w.nLayer
+      || !Number.isInteger(capture.head) || capture.head < 0 || capture.head >= this.w.nh)) {
+      throw new Error('Invalid memory capture layer or head');
+    }
+    let memoryTrace = null;
     const w = this.w;
     const D = w.D, nh = w.nh, N = w.N, vocab = w.vocab, nTotal = w.nTotal;
     const T = tokens.length;
@@ -235,7 +248,9 @@ class BDH {
             const ko = s * N;
             let acc = 0;
             for (let j = 0; j < N; j++) acc += qr[qo + j] * qr[ko + j];
-            scores[ro + s] = acc;
+            // λ=1 preserves the original computation exactly. λ<1 is a
+            // separately labelled experimental intervention, not native decay.
+            scores[ro + s] = memoryDecay === 1 ? acc : acc * Math.pow(memoryDecay, t - s - 1);
           }
           for (let s = t; s < T; s++) scores[ro + s] = 0;
         }
@@ -270,6 +285,16 @@ class BDH {
         for (let t = 0; t < T; t++) {
           const so = t * N, xo = xyBase + t * N;
           for (let j = 0; j < N; j++) xy[xo + j] = xSparse[so + j] * ySparse[so + j];
+        }
+        if (capture && capture.layer === layer && capture.head === h) {
+          // Copies expose the actual tensors without altering the forward pass.
+          // The graph reconstructs context state from these reads and writes.
+          memoryTrace = {
+            layer, head: h, T, N, D, decay: memoryDecay,
+            query: qr.slice(), values: x.slice(), xSparse: xSparse.slice(),
+            attention: attnV.slice(), gate: ySparse.slice(),
+            xy: xy.slice(xyBase, xyBase + T * N)
+          };
         }
       }
 
@@ -351,6 +376,7 @@ class BDH {
       crossEntropyBits: crossEntropyBits,
       logits: logits,
       xySparse: keepRaw ? rawLayers : null,   // [nLayer] Float32Array(nh*T*N)
+      memoryTrace: memoryTrace,
       T: T
     };
   }

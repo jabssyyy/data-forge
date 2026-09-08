@@ -51,10 +51,10 @@ const {
       });
       await p.goto(results.url);
       await ready(p);
-      await p.locator('[data-weights="untrained"]').click();
+      await p.locator('button[data-weights="untrained"]').click();
       await p.waitForTimeout(100);
       assert(requested);
-      await p.locator('[data-weights="trained"]').click();
+      await p.locator('button[data-weights="trained"]').click();
       release();
       await ready(p);
       await p.waitForTimeout(300);
@@ -80,7 +80,7 @@ const {
         await route.continue();
       });
       await p.goto(results.url);
-      await p.locator('[data-weights="untrained"]').click();
+      await p.locator('button[data-weights="untrained"]').click();
       await ready(p);
       release();
       await p.waitForTimeout(400);

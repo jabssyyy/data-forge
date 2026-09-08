@@ -1484,6 +1484,24 @@ async function boot() {
   el.tabSandbox.tabIndex = -1;
   wireControls();
   wireInspector();
+  memoryLabController = window.MemoryLab.mount($("memoryLab"), {
+    get: () => ({
+      ready: !!(
+        state.result &&
+        !state.result.pending &&
+        state.result.xySparse &&
+        models[state.weights]
+      ),
+      model: models[state.weights],
+      tokens: state.result?.tokens || [],
+      token: state.selectedToken,
+      layer: state.layer,
+      weights: state.weights,
+      instrument: state.mode === "instrument",
+    }),
+    select: selectToken,
+    stopPlayback,
+  });
   wireGuide();
   loadOfflineComparison();
   loadTransformerModels();
@@ -1534,6 +1552,7 @@ async function boot() {
 
 /* Measured neuron inspector. The model stores [head, token, neuron], never
  * [token, globalNeuron]. Replaying selection does not invoke forward(). */
+let memoryLabController = null;
 let playbackTimer = 0;
 const neuronCells = [];
 const transformerCells = [];
@@ -1549,6 +1568,7 @@ function selectToken(token) {
   renderInspector();
 }
 function renderInspector() {
+  if (memoryLabController) memoryLabController.sync();
   const r = state.result;
   const ready = !!(r && !r.pending && r.xySparse);
   $("tokenSlider").disabled = $("playTokens").disabled = !ready;
@@ -1667,10 +1687,12 @@ function wireInspector() {
     loadTransformerModels();
   });
   $("tokenSlider").addEventListener("input", () => {
+    if (memoryLabController) memoryLabController.stop();
     stopPlayback();
     selectToken(Number($("tokenSlider").value));
   });
   $("playTokens").addEventListener("click", () => {
+    if (memoryLabController) memoryLabController.stop();
     if (playbackTimer) {
       stopPlayback();
       return;

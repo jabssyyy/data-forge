@@ -2,7 +2,7 @@
 
 > **In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.**
 
-[Open the public demo](https://rawcdn.githack.com/jabssyyy/data-forge/68780b82834ae3d51334bab8a54c23a43d48719d/index.html) · [Concept PDF](docs/concept-summary.pdf) · [Blog PDF](docs/blog.pdf)
+[Public source repository](https://github.com/jabssyyy/data-forge) · [Open the public demo](https://rawcdn.githack.com/jabssyyy/data-forge/68780b82834ae3d51334bab8a54c23a43d48719d/index.html) · [Concept PDF](docs/concept-summary.pdf) · [Blog PDF](docs/blog.pdf)
 
 The public demo is an immutable release snapshot served by githack; first-time visitors click its “Open the page” confirmation. No sign-in is required. Both live models and PDF downloads were checked in an unauthenticated browser. GitHub Pages deployment awaits the repository owner enabling **Settings → Pages → Source: GitHub Actions**; then rerun the deployment workflow. [Release checks](docs/submission-checklist.md).
 
@@ -19,6 +19,21 @@ python3 -m http.server 8000
 ```
 
 Open http://localhost:8000. Serve through HTTP so relative JSON fetches work. Browser computation uses `Float32Array` in `bdh.js`; `app.js`, `index.html`, and `style.css` provide the controls and charts. Default inference starts after weights load. Google Fonts is optional, with system font fallbacks.
+
+## Component map
+
+| Component | Role |
+|---|---|
+| `index.html`, `style.css`, `app.js` | Accessible static page, controls, guide, chart, dual grids, data table, caching and playback |
+| `bdh.js`, `transformer.js` | Local forward passes using exported weights; no browser training |
+| `memory.js` | Reconstructs centered BDH context projections and verifies their attention read |
+| `memory-lab.js`, `graph-view.js`, their CSS | Memory controls, signed graph and edge inspector, selected-token interpretation, hypothetical decay comparison |
+| `bdh_probe.py`, `probe/tiny_transformer.py` | Offline synthetic training, random controls, measurements and exports |
+| `weights*.json`, `results*.json`, `probe/*reference.json` | Fixed checkpoints, canonical measurements and Python reference tensors |
+| `parity_test.js`, `transformer_parity_test.js`, `memory_test.js` | Numerical agreement, failure-detection and state-reconstruction checks |
+| `scripts/browser*_check.cjs`, `scripts/memory_browser_check.cjs` | Browser interaction and viewport verification; separate from numerical validation |
+| `scripts/build_pdfs.py`, `docs/*.md` | Editable deliverables, references, licenses, reproducible PDF exports and evidence |
+| `scripts/build_site.py`, `.github/workflows/pages.yml` | Static release allowlist and GitHub Pages build/deployment workflow |
 
 ## What the signals mean
 
@@ -52,11 +67,21 @@ Further limitations: one seed and one canonical cold cycle; 64× fewer neurons t
 
 Definition 4 gives **y = ReLU(D_y LN(a*)) ⊙ x**. Both nonnegative factors must be positive for a coordinate to be active. In code, D_x=`encoder`, D_y=`encoder_v`, E=`decoder`, and measured y=`xy_sparse`. This structural rule does not prove a confidence-driven causal explanation.
 
+[Mirzadeh et al., *ReLU Strikes Back: Exploiting Activation Sparsity in Large Language Models* (2023)](https://arxiv.org/abs/2310.04564) empirically study ReLU activation sparsity in language models and ways to exploit it. Their efficiency results are not speedups measured by this demo. Together with BDH (2025) and Spark Transformer (2025), this supplies three recent primary papers directly studying the selected sparsity concept; Herrmann is additional context.
+
 The simplified bias-free ReLU hidden activation `h=ReLU(zW1)` is compared with the product. The complete original Transformer FFN includes output projection and biases; see [Vaswani et al. (2017), equation 2](https://arxiv.org/html/1706.03762v7#S3.SS3). [You et al., *Spark Transformer: Reactivating Sparsity in FFN and Attention* (2025)](https://arxiv.org/abs/2506.06644) uses explicit top-k sparsity; this is one design, not a property of every Transformer and not our control architecture.
 
 **Offline training and PRECOMPUTED evaluation table:** one trained and one random ReLU Transformer, d=32, four shared depths/heads, hidden width 1,024, parameter-free LayerNorm, 71,680 parameters. The sole 2,200-step seed-0 run passes the predeclared predictive-comparability gate: evaluation CE 0.638092 bits and target-repeat CE 0.123844 bits. Trained layer 2 averages 1.9775% versus 1.2503% activity, ratio 1.581590×; random layer 2 gives 0.998273×. The Transformer also becomes sparser here. Different parameter counts, attention operators/masks, RoPE widths (8 versus 256), and residual paths prevent isolating gating as the cause. The sampled schedule replays baseline code; historical batch indices were not archived independently. See [protocol](docs/transformer-protocol.md) and [results](docs/transformer-results.md). Fixed offline results do not follow sandbox controls. Separately, `transformer.js` computes a LIVE activity curve and grid using the same current inputs as BDH. Both trained and random Transformer ports pass exact count/zero-pattern and numerical parity via `node transformer_parity_test.js`; this does not remove the experimental confounds.
 
 [Engdahl et al., *BDH-CQ: In-Context Learning with Recurrent Latent Reasoning* (2026)](https://arxiv.org/abs/2608.09888) describes a later system. This probe neither implements nor evaluates it; no checkpoint availability claim is made.
+
+## A separate memory lab
+
+The memory graph answers a different question from the activity grid: what projected context is available to read before this token? Trained weights stay fixed; context accumulates during a sequence; an inactive neuron does not imply a deleted memory. Signed edges are a centered projection of the computed BDH working state for a selected head, before the final normalization scale and gate. They are not literal paper sigma, semantic concepts, or learned weight changes. The selected 12-by-12 view shows a subset; absent edges may simply be filtered out.
+
+The lab compares the actual model (lambda=1) with an explicitly **hypothetical fading-memory intervention** (lambda=0.96), recomputing all heads and layers with unchanged weights. The original checkpoint has no native decay gate. Compare measured prediction error: discounting earlier input can help or hurt, and a changing edge is not proof of selective erasure. The original sparsity chart remains the unmodified model. [Memory explanation and exact equations](docs/memory-explainer.md).
+
+Numerical verification passes 64 weight/layer/head/decay cases with maximum normalized read error 3.00e-7. Lambda=1 instrumentation preserves baseline logits, activations, and counts exactly. Run `node memory_test.js`; see [measurement evidence](docs/memory-verification.json). This numerical verification is separate from browser interaction testing and scientific claims about forgetting.
 
 ## Reproduce without overwriting evidence
 
@@ -97,3 +122,5 @@ python3 scripts/build_pdfs.py
 The generator uses editable Markdown, linked references, and standard PDF fonts. PDF counts and visual checks are recorded in [PDF verification](docs/pdf-verification.md).
 
 Existing project attribution names Jabin M, Anton, and Dev. Historical notes credit Claude assistance; this build additionally uses Codex and parallel helper agents for implementation, source checking, documentation, and tests. These are recorded automated checks, not a claim of unrecorded human verification. Project code is [MIT licensed](LICENSE); the [upstream BDH notice](docs/upstream-bdh-LICENSE.txt) is retained. Official current event rules and external submission completion are not established by local deliverables alone.
+
+The supplied requirements image is mapped to evidence and remaining release checks in [requirements-audit.md](docs/requirements-audit.md). The image itself is not a project asset and is not included in the release.

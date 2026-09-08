@@ -1,0 +1,282 @@
+.memory-graph {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 275px;
+  border: 1px solid var(--rule-2);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.memory-graph__main {
+  min-width: 0;
+  padding: 22px 24px 18px;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    var(--accent-wash),
+    transparent 66%
+  );
+}
+.memory-graph__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+.memory-graph__eyebrow,
+.memory-graph__step {
+  font: 500 10px/1.5 var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--ink-2);
+}
+.memory-graph__step {
+  white-space: nowrap;
+  color: var(--accent-ink);
+}
+.memory-graph__canvas svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  overflow: visible;
+}
+.memory-graph__column {
+  font: 500 11px var(--mono);
+  fill: var(--ink-2);
+  letter-spacing: 0.035em;
+}
+.memory-graph__node {
+  cursor: pointer;
+}
+.memory-graph__node text {
+  font: 500 12px var(--mono);
+  fill: var(--ink);
+}
+.memory-graph__node-halo {
+  fill: var(--accent-wash);
+  stroke: var(--rule-2);
+  stroke-width: 1;
+}
+.memory-graph__node-core {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.memory-graph__node:hover .memory-graph__node-core,
+.memory-graph__node[aria-pressed="true"] .memory-graph__node-core {
+  fill: var(--accent-wash);
+  stroke-width: 4;
+}
+.memory-graph__edge {
+  cursor: pointer;
+}
+.memory-graph__edge:hover path:first-child,
+.memory-graph__edge.is-selected path:first-child {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px var(--accent-wash));
+}
+.memory-graph__edge:focus-visible,
+.memory-graph__node:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+.memory-graph__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  justify-content: center;
+  font: 11px/1.5 var(--mono);
+  color: var(--ink-2);
+}
+.memory-graph__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.memory-graph__swatch {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  background: var(--accent);
+}
+.memory-graph__swatch.is-negative {
+  background: var(--s-ce);
+}
+.memory-graph__caption {
+  max-width: 570px;
+  text-align: center;
+  margin: 15px auto 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+.memory-graph__inspector {
+  padding: 25px 23px;
+  background: var(--surface-2);
+  border-left: 1px solid var(--rule);
+}
+.memory-graph__inspector h3 {
+  font-size: 23px;
+  line-height: 1.2;
+  letter-spacing: -0.035em;
+  margin: 20px 0;
+  overflow-wrap: anywhere;
+}
+.memory-graph__detail p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin: 0 0 15px;
+}
+.memory-graph__detail .memory-graph__big-value {
+  font: 500 35px/1.2 var(--mono);
+  color: var(--ink);
+  letter-spacing: -0.06em;
+}
+.memory-graph__detail .memory-graph__change {
+  font-weight: 600;
+  color: var(--accent-ink);
+}
+.memory-graph__detail .memory-graph__small {
+  font-size: 11px;
+}
+.memory-graph__spark {
+  width: 100%;
+  height: 80px;
+  margin-bottom: 8px;
+}
+.memory-graph__table-wrap {
+  grid-column: 1/-1;
+  border-top: 1px solid var(--rule);
+  padding: 14px 22px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.memory-graph__table-wrap summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+.memory-graph__table-scroll {
+  overflow-x: auto;
+  margin-top: 14px;
+}
+.memory-graph table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 11px/1.5 var(--mono);
+}
+.memory-graph caption {
+  text-align: left;
+  margin-bottom: 12px;
+}
+.memory-graph td,
+.memory-graph th {
+  padding: 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+.memory-graph td:first-child,
+.memory-graph th:first-child {
+  text-align: left;
+}
+@media (max-width: 800px) {
+  .memory-graph {
+    grid-template-columns: 1fr;
+  }
+  .memory-graph__inspector {
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .memory-graph__inspector h3 {
+    margin: 10px 0;
+  }
+  .memory-graph__main {
+    padding: 18px 12px;
+  }
+  .memory-graph__canvas svg {
+    min-height: 220px;
+  }
+  .memory-graph__top {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .memory-graph__detail {
+    max-width: 650px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .memory-graph__edge path:first-child {
+    transition:
+      stroke-width 0.18s,
+      opacity 0.18s;
+  }
+}
+@media (max-width: 560px) {
+  .memory-graph__canvas {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    margin: 0 -4px;
+  }
+  .memory-graph__canvas svg {
+    min-width: 620px;
+  }
+  .memory-graph__legend {
+    justify-content: flex-start;
+    font-size: 10px;
+    gap: 9px 12px;
+  }
+  .memory-graph__caption {
+    text-align: left;
+  }
+  .memory-graph__canvas::after {
+    content: "Scroll sideways to explore the graph →";
+    display: block;
+    position: sticky;
+    left: 0;
+    font: 10px/1.5 var(--mono);
+    color: var(--ink-2);
+    padding: 4px 0 12px;
+  }
+  .memory-graph__inspector {
+    padding: 20px;
+  }
+}
+.memory-graph__node.is-active .memory-graph__node-core {
+  fill: var(--s-oracle-wash);
+  stroke: var(--s-oracle);
+  stroke-width: 3;
+}
+.memory-graph__activity-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--s-oracle-wash);
+  border: 2px solid var(--s-oracle);
+}
+@media (max-width: 560px) {
+  .memory-graph__canvas {
+    overflow: visible;
+    margin: 0;
+  }
+  .memory-graph__canvas svg {
+    min-width: 0;
+    min-height: 0;
+  }
+  .memory-graph__canvas::after {
+    display: none;
+  }
+  .memory-graph__column {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .memory-graph__node text {
+    font-size: 10px;
+  }
+}
+.memory-graph__edge:focus-visible {
+  outline: none;
+}
+.memory-graph__edge:focus-visible path:first-child {
+  opacity: 1;
+  filter: drop-shadow(0 0 2px var(--ink));
+}

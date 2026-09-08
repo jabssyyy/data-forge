@@ -1,11 +1,11 @@
 {
   "passed": true,
   "browser": "152.0.7977.82",
-  "url": "http://127.0.0.1:8000/_site/",
+  "url": "http://127.0.0.1:8000/",
   "initial": {
     "ratio": "3.10×",
     "word": "mmgtfhhe",
-    "ms": 81.09999990463257,
+    "ms": 96.09999990463257,
     "grid": 185,
     "expected": 185,
     "cacheEntries": 1
