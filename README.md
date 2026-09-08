@@ -1,120 +1,95 @@
 # Sparsity Is Not a Budget
 
-> **Claim:** *In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.*
+> **In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.**
 
-Interactive educational instrument for **DataForge 2026** (Kharagpur Data Analytics Group, IIT Kharagpur) · **Pathway Track** · **Topic #22: Sparse Non-Negative Activations**.
+A static educational instrument for DataForge's locally specified Pathway topic, sparse nonnegative activations. **Not an official BDH model.** This independent, small synthetic-task implementation follows [Kosowski et al., *The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain* (2025)](https://arxiv.org/abs/2509.26507), especially Definition 4 and §6.4. It does not establish a result about natural language or BDH-CQ.
 
----
+Start with the trained layer-2 preset, inspect a token's 1,024 neurons, then try layer 0 and random weights. The guide uses those real controls. You can change the word, repeat count, layer, and weight set; token playback inspects computed arrays. This is for students and practitioners who understand ReLU, next-token prediction, and cross-entropy. The learning objectives are to predict repetition behavior, identify counterexamples, and connect the measurement to the gate.
 
-## 1. Context & Overview
+## Run locally
 
-This project is an interactive explainer and empirical instrument demonstrating **native, adaptive activation sparsity** in Baby Dragon Hatchling (BDH), a recurrent attention-free architecture introduced by Pathway ([Kosowski et al., 2025, arXiv:2509.26507](https://arxiv.org/abs/2509.26507)).
+No build step, backend, browser training, or JavaScript dependencies are required.
 
-Unlike standard Transformers or ReLU networks where sparsity is either constrained by fixed top-$k$ budgets or artificial penalties, BDH exhibits an emergent dynamical property: internal activation sparsity naturally deepens when inputs become predictable.
-
-> **Important Disclosure:** This project is an independent reimplementation at 1/64th the paper's neuron count ($n=1024$ vs $n=65536$). It is not an official BDH model.
-
----
-
-## 2. Target Audience & Learning Objectives
-
-### Target Audience
-A data scientist or deep learning student who has trained neural networks and understands basic concepts (activations, ReLU, layer depth, next-token prediction, cross-entropy loss), but has not necessarily read post-Transformer literature. No familiarity with RoPE, state-space models, or linear attention is assumed.
-
-### Learning Objectives
-After 60 seconds with this artifact, the learner can:
-1. **State the core claim** in their own words: sparsity in BDH is dynamic and emergent, not an externally enforced budget.
-2. **Predict the consequence** on active neuron fraction when the repeat count of a pattern increases.
-3. **Identify the boundaries of the claim**: name where it breaks (layer 0 shows no effect) and where measurement diverges from oracle surprisal (the warm-up phase).
-4. **Point to the governing mechanism**: connect the behavior to BDH's recurrent gating formulation (Definition 4 in Kosowski et al., 2025).
-
----
-
-## 3. Architecture & Artifact Breakdown
-
-Every piece of computation in the artifact is strictly categorized and displayed:
-
-| Component | Nature | Role & Implementation |
-|---|---|---|
-| **BDH Forward Pass (`bdh.js`)** | `LIVE` | Client-side pure JavaScript forward pass with `Float32Array`. Runs in <200 ms on every parameter tweak. No remote server, no pre-rendered animations. |
-| **Oracle Surprisal** | `ANALYTIC` | Exact closed-form ground truth computed directly from the sequence generator: 0 bits for warm-up, $\log_2(26) \approx 4.70$ bits for novel tokens, 0 bits for repeated tokens. |
-| **Model Cross-Entropy** | `LIVE` | Per-token loss $-\log_2 p(\text{target})$ computed live by `bdh.js` to illustrate where internal confidence tracks surprisal. |
-| **Model Weights** | `PRECOMPUTED` | Shipped as JSON arrays trained once on a single CPU core using the synthetic protocol. |
-| **Letter Corpus** | `SYNTHETIC` | Purpose-built synthetic benchmark from BDH Paper §6.4: 13 fixed warm-up characters followed by an 8-character word repeated across cycles. |
-
-### Payload & Weight Footprint
-The model runs with $n=1024$ internal neurons, embedding dimension $d=32$, and $L=4$ layers with shared weights (100,352 total parameters).
-The weight payload consists of:
-- `weights_trained.json`: **1.41 MB**
-- `weights_untrained.json`: **1.49 MB**
-- **Total payload**: **~2.9 MB** JSON (uncompressed).
-
----
-
-## 4. The Governing Mechanism
-
-In BDH ([Kosowski et al., 2025](https://arxiv.org/abs/2509.26507), Definition 4), the token representation passes through a dual-encoder gated activation:
-
-$$\mathbf{y}_t = \text{ReLU}(\mathbf{D}_x \mathbf{x}_t) \odot \text{ReLU}(\mathbf{D}_y \mathbf{x}_t)$$
-
-In the official codebase, $\mathbf{D}_y$ is implemented as `encoder_v`. The elementwise product of two non-negative activations ensures that a neuron fires if and only if **both** projections activate simultaneously.
-
-As representations align with predictable repeated sequences, internal representations stabilize and compress ([Herrmann, Csordás, & Schmidhuber, 2025, arXiv:2503.13431](https://arxiv.org/abs/2503.13431)), driving the active neuron fraction down by ~3.3–3.5× in higher layers. This contrasts sharply with fixed-sparsity methods in Transformers ([You et al., 2025, Spark Transformer, arXiv:2506.06644](https://arxiv.org/abs/2506.06644)), where the computational budget cannot dynamically contract on easy tokens.
-
----
-
-## 5. Seven Disclosed Limitations
-
-1. **Layer 0 shows no effect**: Layer 0 acts as a feature encoder where activity remains flat (~10–14%). The sparsity drop is emergent in deeper layers (Layers 2 & 3), matching §6.4 of the BDH paper.
-2. **64× Neuron Shrink**: Shrunk from $n=65536$ to $n=1024$. The absolute activation percentage is higher (~16.7% vs ~5%), but the **3.3×–3.5× relative collapse ratio** reproduces faithfully.
-3. **Synthetic Task Only**: Evaluated on Section 6.4's synthetic repeating-fact protocol, not natural language.
-4. **Untrained Control**: When toggled to untrained random weights, the collapse disappears, demonstrating that the drop is learned dynamics rather than an algebraic artifact of ReLU.
-5. **No State/KV-Cache in JS**: The browser runs the full sequence forward pass directly via lower-triangular causal attention.
-6. **Token 0 Attend-to-Nothing**: Token 0 attends to zero previous tokens, giving exactly 0 active neurons by causal definition.
-7. **Warm-up Divergence**: During the 13 fixed warm-up tokens, cross-entropy drops as the model identifies position, but neuron activity remains elevated, demonstrating that activation sparsity does not mirror cross-entropy everywhere.
-
----
-
-## 6. Reproduction & Parity Testing
-
-### Running the Local Web App
-No build tools, bundlers, or package installations required:
-```bash
-python -m http.server 8000
+```sh
+python3 -m http.server 8000
 ```
-Visit `http://localhost:8000` in any modern web browser.
 
-### Verifying Parity with PyTorch
-Run the parity test suite:
-```bash
+Open http://localhost:8000. Serve through HTTP so relative JSON fetches work. Browser computation uses `Float32Array` in `bdh.js`; `app.js`, `index.html`, and `style.css` provide the controls and charts. Default inference starts after weights load. Google Fonts is optional, with system font fallbacks.
+
+## What the signals mean
+
+| Label | Meaning |
+|---|---|
+| LIVE | Browser-computed BDH activity/CE and Transformer activity for current inputs |
+| ANALYTIC | Oracle surprisal under the known generator: 0 bits for fixed/repeated letters, log2(26) ≈ 4.70 bits for novel random letters |
+| SYNTHETIC | Fixed warm-up and repeated random-letter task; a typed English-looking word remains a synthetic input |
+| PRECOMPUTED | Trained/random exported weights and the separate offline Transformer evaluation |
+| ANIMATED | Playback through already computed token activations; no fresh inference on each frame |
+
+The dashed Transformer activity curve and two synchronized grids use the same token, layer, sequence, and trained/random selection. BDH grid cells represent `xy_sparse > 0`, with four heads of 256 coordinates in head-major order. Their positions imply no semantic correspondence or synaptic wiring. Transformer cells independently represent `ReLU hidden > 0`; cell positions imply no cross-model neuron correspondence. Selecting a token changes the view into the computed tensor; changing sequence or weights requires inference.
+
+## Evidence and boundaries
+
+The shipped seed-0 baseline uses n=1,024, d=32, four layers, four heads, vocabulary 32, and weights shared across depth: **100,352 parameters**. Training is 2,200 AdamW steps, batch four, sequence length 154, learning rate 0.003. The canonical word is `mmgtfhhe`; each evaluation contains 13 warm-up letters followed by eight copies of this word (77 tokens).
+
+| Baseline measurement | Memorize | Repeat | Ratio |
+|---|---:|---:|---:|
+| Trained BDH, layer 2 | 15.7715% | 5.0834% | 3.102573× |
+| Trained BDH, layer 0 | 12.8418% | 13.9056% | 0.923501× |
+| Random BDH, layer 2 | 24.8291% | 23.9798% | 1.035416× |
+
+Activity means exclude structurally silent token 0: warm-up/memorize/repeat denominators are 12/8/56. Original `results.json` includes token 0 in warm-up: 18.1415%; the visible convention gives 19.6533%. Neither convention changes the memorize/repeat ratio. Repeat count one has no repeat mean or ratio. Layers are zero-indexed.
+
+Cross-entropy has separate alignment: predictor t scores target t+1, giving 76 known predictions. Training loss is in nats; chart CE is in bits and phase summaries use target phase. Warm-up target CE is **0.112845 bits**, lower than repeat's **0.766147 bits**, despite higher activity. This falsifies a simple account that activity tracks model uncertainty everywhere. Cold-start state establishment is an **untested hypothesis**. [Herrmann, Csordás, and Schmidhuber, *Measuring In-Context Computation Complexity via Hidden State Prediction* (2025)](https://arxiv.org/abs/2503.13431) provides relevant caution about next-token loss as a computation metric; we do not implement its PHi metric.
+
+Further limitations: one seed and one canonical cold cycle; 64× fewer neurons than the paper's Figure 14 model; synthetic rather than natural-language training; layer 0 lacks the comparable drop; browser execution recomputes full causal sequences without a persistent state cache; counts do not measure sparse-kernel speedups, energy, or interpretable synaptic state. The paper reports different absolute percentages at a different scale; the local observation is not a replication of every paper condition.
+
+## Mechanism and Transformer control
+
+Definition 4 gives **y = ReLU(D_y LN(a*)) ⊙ x**. Both nonnegative factors must be positive for a coordinate to be active. In code, D_x=`encoder`, D_y=`encoder_v`, E=`decoder`, and measured y=`xy_sparse`. This structural rule does not prove a confidence-driven causal explanation.
+
+The simplified bias-free ReLU hidden activation `h=ReLU(zW1)` is compared with the product. The complete original Transformer FFN includes output projection and biases; see [Vaswani et al. (2017), equation 2](https://arxiv.org/html/1706.03762v7#S3.SS3). [You et al., *Spark Transformer: Reactivating Sparsity in FFN and Attention* (2025)](https://arxiv.org/abs/2506.06644) uses explicit top-k sparsity; this is one design, not a property of every Transformer and not our control architecture.
+
+**Offline training and PRECOMPUTED evaluation table:** one trained and one random ReLU Transformer, d=32, four shared depths/heads, hidden width 1,024, parameter-free LayerNorm, 71,680 parameters. The sole 2,200-step seed-0 run passes the predeclared predictive-comparability gate: evaluation CE 0.638092 bits and target-repeat CE 0.123844 bits. Trained layer 2 averages 1.9775% versus 1.2503% activity, ratio 1.581590×; random layer 2 gives 0.998273×. The Transformer also becomes sparser here. Different parameter counts, attention operators/masks, RoPE widths (8 versus 256), and residual paths prevent isolating gating as the cause. The sampled schedule replays baseline code; historical batch indices were not archived independently. See [protocol](docs/transformer-protocol.md) and [results](docs/transformer-results.md). Fixed offline results do not follow sandbox controls. Separately, `transformer.js` computes a LIVE activity curve and grid using the same current inputs as BDH. Both trained and random Transformer ports pass exact count/zero-pattern and numerical parity via `node transformer_parity_test.js`; this does not remove the experimental confounds.
+
+[Engdahl et al., *BDH-CQ: In-Context Learning with Recurrent Latent Reasoning* (2026)](https://arxiv.org/abs/2608.09888) describes a later system. This probe neither implements nor evaluates it; no checkpoint availability claim is made.
+
+## Reproduce without overwriting evidence
+
+Tested tools: Python 3.12.4, PyTorch 2.7.0, Node 25.6.0. Install training dependencies into an environment of your choice; PDF dependencies are separate.
+
+```sh
+python3 -m pip install -r requirements.txt
 node parity_test.js
-```
-Expected output:
-- **Trained weights**: Max absolute error $< 1\times 10^{-5}$, active count mismatches: `0 / 308`, exact zero agreements: `0 disagreements` (**PASS**).
-- **Untrained weights**: Active count mismatches: `0 / 308` (**PASS**).
-
-### Reproducing Training & Weight Export
-To retrain the probe from scratch and export weights:
-```bash
-python bdh_probe.py --export-weights weights_trained.json
+node transformer_parity_test.js
+mkdir -p /tmp/dataforge-reproduction
+python3 bdh_probe.py --out /tmp/dataforge-reproduction/results.json --export-weights /tmp/dataforge-reproduction/weights_trained.json --dump-reference /tmp/dataforge-reproduction/reference.json
+python3 bdh_probe.py --untrained --export-weights /tmp/dataforge-reproduction/weights_untrained.json --dump-reference-untrained /tmp/dataforge-reproduction/untrained_reference.json
 ```
 
----
+The untrained command exports random weights/reference only: it does not write an `--out` measurement file. The trained command performs the complete training run. Historical project records estimate about four minutes on one CPU core; this is not a new runtime measurement or a browser timing guarantee. Uncompressed BDH weights total **2,895,138 bytes** (trained 1,405,607; random 1,489,531). Mobile timing depends on device and input length.
 
-## 7. Primary References
+Parity requires exact active counts and zero patterns, finite values/logits, scale-normalised activation error below 1e-4, and CE error below 1e-4 bits. Both baseline fixtures pass; missing fixtures fail. Numerical details and hashes are in [baseline audit](docs/baseline-audit.md). Running parity checks shipped evidence; it does not itself retrain the model. A fresh clone of the original public commit was retrained on the current macOS ARM/Python 3.12.4/PyTorch 2.7.0 environment: its layer-2 ratio was about 3.37× rather than the shipped 3.10×, with final minibatch loss 0.4628 nats. Training is not bit-identical across platforms/runtime settings; the original evidence remains unchanged. See [reproduction record](docs/reproduction-check.json).
 
-1. **Kosowski et al. (2025)**. *Dragon Hatchling: A Fast and Memory-Efficient Non-Transformer Architecture*. [arXiv:2509.26507](https://arxiv.org/abs/2509.26507).
-2. **Herrmann, Csordás, & Schmidhuber (2025)**. *Input Complexity and Predictability in Recurrent Representations*. [arXiv:2503.13431](https://arxiv.org/abs/2503.13431).
-3. **You et al. (2025)**. *Spark Transformer: Dynamic Sparsity in Deep Architectures*. [arXiv:2506.06644](https://arxiv.org/abs/2506.06644).
-4. **Engdahl et al. (2026)**. *BDH-CQ: Context-Query Architectures for Extended Reasoning*. (BDH-CQ is a later reasoning system in the same lineage; the sparse-activation effect demonstrated here is a native BDH result).
+Transformer reproduction commands and schedule-output caveats are in [its results report](docs/transformer-results.md). To avoid all incidental outputs touching shipped data, run training in an isolated repository copy. Contract tests:
 
----
+```sh
+python3 -m unittest discover -s probe -p test_tiny_transformer.py
+```
 
-## 8. AI Assistance & Team Disclosure
+## Deliverables, sources, and credits
 
-- **Team**: Jabin M, Anton, Dev (Registered participants, DataForge 2026, IIT Kharagpur).
-- **AI Assistance Disclosure**: In accordance with DataForge & Pathway track requirements, Anthropic Claude was used for architectural planning, math derivation cross-verification, and code implementation support. All underlying math, probe reproduction, parity test verification, and live defenses are owned and understood by the team.
+- [One-page concept PDF](docs/concept-summary.pdf) · [editable source](docs/concept-summary.md)
+- [Investigation blog PDF](docs/blog.pdf) · [editable source](docs/blog.md)
+- [Verified source ledger](docs/sources.md), [licenses and AI disclosure](docs/licenses.md), [execution status](docs/execution-status.md)
 
-## 9. License
+Regenerate both PDFs from the repository root:
 
-This project is open-source under the [MIT License](LICENSE).
+```sh
+python3 -m pip install -r requirements-docs.txt
+python3 scripts/build_pdfs.py
+```
+
+The generator uses editable Markdown, linked references, and standard PDF fonts. PDF counts and visual checks are recorded in [PDF verification](docs/pdf-verification.md).
+
+Existing project attribution names Jabin M, Anton, and Dev. Historical notes credit Claude assistance; this build additionally uses Codex and parallel helper agents for implementation, source checking, documentation, and tests. These are recorded automated checks, not a claim of unrecorded human verification. Project code is [MIT licensed](LICENSE); the [upstream BDH notice](docs/upstream-bdh-LICENSE.txt) is retained. Official current event rules and external submission completion are not established by local deliverables alone.

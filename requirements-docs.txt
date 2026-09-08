@@ -1,0 +1,2 @@
+# Only needed to regenerate the PDF deliverables.
+reportlab==5.0.0

@@ -1,0 +1,3 @@
+*.pdf binary
+# Preserve the upstream OFL notice's original line endings verbatim.
+docs/ibm-plex-LICENSE.txt -whitespace

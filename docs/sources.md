@@ -1,0 +1,19 @@
+# Primary-source and claim ledger
+
+Verified 2026-09-08 against the primary pages below. Local measurements are independent evidence, not values copied from papers. Historical planning documents retain superseded titles and interpretations; this ledger controls current public documentation.
+
+| Source | Exact location | Supported use and boundary |
+|---|---|---|
+| Adrian Kosowski, Przemysław Uznański, Jan Chorowski, Zuzanna Stamirowska, Michał Bartoszkiewicz (2025), **The Dragon Hatchling: The Missing Link between the Transformer and Models of the Brain**, [arXiv:2509.26507v1](https://arxiv.org/html/2509.26507v1) | §3.2 Definition 4, equation (4); §6.4 Figure 14; Appendix E | Gated activation `y = (D_y LN(a*))^+ ⊙ x`; both nonnegative factors must be positive. Synthetic task: fixed 13 letters, eight repetitions of eight random letters. Paper n=65,536, d=256, L=4; Fig14 reports 4.0–7.5% memorization and approximately 2.5% repetition. This does not prove confidence causes the local activity drop. |
+| Vincent Herrmann, Róbert Csordás, Jürgen Schmidhuber (2025), **Measuring In-Context Computation Complexity via Hidden State Prediction**, [arXiv:2503.13431v1](https://arxiv.org/abs/2503.13431v1) | Abstract; proposed PHi metric | Next-token loss alone can be a poor indicator of interesting computation; paper develops hidden-state prediction. We do not implement PHi and do not claim it explains BDH's gate. |
+| Chong You et al. (19 authors; full list on primary record) (2025), **Spark Transformer: Reactivating Sparsity in FFN and Attention**, [arXiv:2506.06644v2](https://arxiv.org/abs/2506.06644v2) | Abstract, explicit top-k and statistical top-k description | A specific Transformer uses controlled sparsity in FFN and attention. It is not our ReLU control and is not evidence that every Transformer has fixed sparsity. |
+| Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, Illia Polosukhin (2017), **Attention Is All You Need**, [arXiv:1706.03762](https://arxiv.org/html/1706.03762v7#S3.SS3) | §3.3 equation (2) | Published FFN is `max(0,zW1+b1)W2+b2`; `h=ReLU(zW1)` is a simplified bias-free hidden activation, not the full published block. Supplementary older citation. |
+| Björn Engdahl, Adrian Kosowski, Jan Chorowski, Zuzanna Stamirowska, Przemysław Uznański, Junlin Jiang, Rohan Phadke, Remigiusz Kinas, Richard Zhong (2026), **BDH-CQ: In-Context Learning with Recurrent Latent Reasoning**, [arXiv:2608.09888v1](https://arxiv.org/abs/2608.09888v1) | Abstract, submitted August 10, 2026 | Later recurrent latent reasoning system. Our synthetic letter probe neither implements nor validates BDH-CQ. No claim is made about current checkpoint availability. |
+
+## Local evidence
+
+`results.json`, `probe/reference.json`, and `probe/untrained_reference.json` preserve the September 8 baseline. `docs/baseline-audit.md` records hashes and corrected activity summaries. Layer 2 is zero-indexed. Measured `y` is `xy_sparse`, with `D_x=encoder`, `D_y=encoder_v`, `E=decoder`; flatten four heads of 256 neurons in head-major order.
+
+For the canonical word `mmgtfhhe`, trained layer 2: memorization 15.771484375%, repetition 5.083356584821429%, ratio 3.102573×. Original warm-up mean includes token 0: 18.141526442307693%; visible mean excludes it: 19.6533203125%. Exclusion only changes warm-up activity. CE is separately aligned by predictor position or target phase; target-aligned baseline warm-up is 0.112845 bits and repetition is 0.766147 bits.
+
+`probe.md` §2 attributes the earlier tiny-Shakespeare attempt to an **external review**. It is historical context, not an experiment newly run here or a first-person team anecdote. Event and track descriptions originate in local brief files; an official current public submission rule page has not been independently established. The requested two PDFs are delivered as local brief requirements.

@@ -9,7 +9,7 @@
  *
  * WHAT IS COMPARED, AND WHY IT IS NOT THE ACTIVE FRACTION:
  * the active fraction is a count over 1024 neurons, so its granularity is
- * 1/1024 ~= 9.8e-4. A 1e-4 tolerance on it is impossible by construction, and
+ * 1/1024 ~= 9.8e-4. A 1e-4 tolerance effectively requires identical counts, and
  * two implementations that disagree about a value's sign can still produce
  * identical fractions.
  *
@@ -30,7 +30,7 @@
  *   2. zero/non-zero pattern  -> EXACT agreement (which neurons fired)
  *   3. raw xy_sparse values   -> max|a-b| / max|ref| < 1e-4  (scale-normalised)
  *   4. token 0                -> exactly 0 active in every layer
- *   5. cross-entropy          -> finite, max absolute error reported
+ *   5. cross-entropy          -> finite, max absolute error < 1e-4 bits
  * Elementwise relative error is still reported, stratified by magnitude, so the
  * degradation is visible rather than hidden by the choice of metric.
  *
@@ -61,9 +61,10 @@ const path = require('path');
 const { BDH } = require('./bdh.js');
 
 const REL_TOLERANCE = 1e-4;
+const CE_TOLERANCE_BITS = 1e-4;
 
 function loadJSON(p) {
-  return JSON.parse(fs.readFileSync(p, 'utf8'));
+  return JSON.parse(fs.readFileSync(path.resolve(__dirname, p), 'utf8'));
 }
 
 /* Flattens reference xy_sparse [nh][T][N] into the same layout bdh.js uses:
@@ -105,6 +106,7 @@ function compare(label, weightsPath, referencePath) {
   let zeroMismatch = 0;      // one side exactly zero, the other not
   let compared = 0;
   let nonZero = 0;
+  let rawFinite = true;
   const relByStratum = {};
   for (const s of STRATA) relByStratum[s] = 0;
 
@@ -116,6 +118,7 @@ function compare(label, weightsPath, referencePath) {
     }
     for (let i = 0; i < refFlat.length; i++) {
       const a = refFlat[i], b = jsFlat[i];
+      if (!Number.isFinite(a) || !Number.isFinite(b)) rawFinite = false;
       const mag = Math.abs(a);
       if ((a === 0) !== (b === 0)) zeroMismatch++;
       if (a !== 0) nonZero++;
@@ -131,7 +134,7 @@ function compare(label, weightsPath, referencePath) {
       compared++;
     }
   }
-  const scaleNormalised = maxAbs / maxRefMag;
+  const scaleNormalised = maxRefMag === 0 ? maxAbs : maxAbs / maxRefMag;
 
   // exact integer active-count match, per layer per token
   let countMismatches = [];
@@ -145,6 +148,9 @@ function compare(label, weightsPath, referencePath) {
 
   // cross-entropy
   let maxCeAbs = 0;
+  if (ref.cross_entropy_bits.length !== out.crossEntropyBits.length) {
+    throw new Error('cross-entropy length mismatch');
+  }
   for (let t = 0; t < ref.cross_entropy_bits.length; t++) {
     const d = Math.abs(ref.cross_entropy_bits[t] - out.crossEntropyBits[t]);
     if (d > maxCeAbs) maxCeAbs = d;
@@ -171,7 +177,8 @@ function compare(label, weightsPath, referencePath) {
         + ': ref=' + m.ref + ' js=' + m.js);
     }
   }
-  console.log('  max abs error (cross-entropy):  ' + maxCeAbs.toExponential(3) + ' bits');
+  console.log('  GATE max abs error (cross-entropy): ' + maxCeAbs.toExponential(3)
+    + ' bits (tolerance ' + CE_TOLERANCE_BITS + ')');
 
   // token 0 must read exactly zero in every layer
   const tok0 = [];
@@ -183,15 +190,19 @@ function compare(label, weightsPath, referencePath) {
   const zeroOk = zeroMismatch === 0;
   const countOk = countMismatches.length === 0;
   const tok0Ok = tok0.every(v => v === 0);
-  const finiteOk = out.crossEntropyBits.every(v => Number.isFinite(v));
-  const pass = scaleOk && zeroOk && countOk && tok0Ok && finiteOk;
+  const finiteOk = rawFinite && out.crossEntropyBits.every(v => Number.isFinite(v))
+    && ref.cross_entropy_bits.every(v => Number.isFinite(v))
+    && out.logits.every(v => Number.isFinite(v));
+  const ceOk = maxCeAbs < CE_TOLERANCE_BITS;
+  const pass = scaleOk && zeroOk && countOk && tok0Ok && finiteOk && ceOk;
 
   console.log('  -> ' + (pass ? 'PASS' : 'FAIL')
     + '  [scale ' + (scaleOk ? 'ok' : 'FAIL')
     + ', zeros ' + (zeroOk ? 'ok' : 'FAIL')
     + ', counts ' + (countOk ? 'ok' : 'FAIL')
     + ', token0 ' + (tok0Ok ? 'ok' : 'FAIL')
-    + ', finite ' + (finiteOk ? 'ok' : 'FAIL') + ']');
+    + ', finite ' + (finiteOk ? 'ok' : 'FAIL')
+    + ', CE ' + (ceOk ? 'ok' : 'FAIL') + ']');
   return pass;
 }
 
@@ -204,7 +215,8 @@ function main() {
   let ran = 0;
   for (const [label, w, r] of cases) {
     if (!fs.existsSync(path.join(__dirname, w)) || !fs.existsSync(path.join(__dirname, r))) {
-      console.log('skipping ' + label + ': missing ' + w + ' or ' + r);
+      console.log('FAIL ' + label + ': missing ' + w + ' or ' + r);
+      allPass = false;
       continue;
     }
     ran++;

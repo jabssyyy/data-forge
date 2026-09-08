@@ -1,310 +1,756 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sparsity Is Not a Budget</title>
-<meta name="description" content="An interactive instrument: watch a trained BDH's active-neuron count collapse when the next letter becomes predictable. Live forward pass, no backend.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sparsity Is Not a Budget</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <meta
+      name="description"
+      content="An interactive instrument: watch a trained BDH's active-neuron count collapse when the next letter becomes predictable. Live forward pass, no backend."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#chartPanel">Skip to the instrument</a>
 
-<!-- ============================ 1. CLAIM BAR (sticky) ==================== -->
-<header class="claim" id="claimBar">
-  <div class="claim__inner">
-    <p class="claim__eyebrow">
-      <span class="eyebrow__site">DataForge 2026 &middot; Pathway track</span>
-      <span class="eyebrow__topic">Topic&nbsp;#22 &mdash; Sparse Non-Negative Activations</span>
-    </p>
-    <h1 class="claim__text">
-      In a trained BDH, the fraction of active neurons in layer&nbsp;2 falls
-      <strong>roughly 3&times;</strong> the moment the next letter becomes predictable &mdash;
-      with the same weights, the same input length, and no sparsity setting touched anywhere.
-    </h1>
-  </div>
-</header>
-
-<nav class="tabs" aria-label="Views">
-  <div class="tabs__inner">
-    <button class="tab is-active" id="tabInstrument" role="tab" aria-selected="true" aria-controls="chartPanel" type="button">Instrument</button>
-    <button class="tab" id="tabSandbox" role="tab" aria-selected="false" aria-controls="chartPanel" type="button">Sandbox</button>
-    <span class="tabs__spacer"></span>
-    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch colour theme" title="Switch colour theme">
-      <span class="theme-toggle__dot" aria-hidden="true"></span><span id="themeToggleLabel">Auto</span>
-    </button>
-  </div>
-</nav>
-
-<main>
-
-<!-- ======================= SANDBOX OFF-DISTRIBUTION BANNER =============== -->
-<div class="offdist" id="offdistBanner" hidden>
-  <span class="badge badge--warn">OFF-DISTRIBUTION</span>
-  <p>This model was trained only on the synthetic protocol above. Behaviour here is
-     <strong>not evidence for or against the claim.</strong></p>
-</div>
-
-<!-- ============================ 2. MAIN CHART ============================ -->
-<section class="panel panel--chart" id="chartPanel">
-
-  <div class="figure__head">
-    <div class="figure__titles">
-      <h2 class="figure__title">Active neurons, beside what was actually surprising</h2>
-      <p class="figure__sub" id="figureSub">One cycle of the Section&nbsp;6.4 protocol, token by token.</p>
-    </div>
-    <div class="readout" id="readout">
-      <div class="readout__item">
-        <span class="readout__label">Memorize</span>
-        <span class="readout__value" id="roMem">&mdash;</span>
+    <!-- ============================ 1. CLAIM BAR (sticky) ==================== -->
+    <header class="claim" id="claimBar">
+      <div class="claim__inner">
+        <p class="claim__eyebrow">
+          <span class="eyebrow__site">DF / DataForge laboratory</span>
+          <span class="eyebrow__topic"
+            >Topic&nbsp;#22 &mdash; Sparse Non-Negative Activations</span
+          >
+        </p>
+        <p class="hero-title">Sparsity is not<br />a <em>budget.</em></p>
+        <h1 class="claim__text">
+          In a trained BDH, the fraction of active neurons in layer&nbsp;2 falls
+          <strong>roughly 3&times;</strong> the moment the next letter becomes
+          predictable &mdash; with the same weights, the same input length, and
+          no sparsity setting touched anywhere.
+        </h1>
       </div>
-      <div class="readout__arrow" aria-hidden="true">&rarr;</div>
-      <div class="readout__item">
-        <span class="readout__label">Repeat</span>
-        <span class="readout__value" id="roRep">&mdash;</span>
+    </header>
+
+    <nav class="tabs" aria-label="Views">
+      <div class="tabs__inner" role="tablist" aria-label="Experiment mode">
+        <button
+          class="tab is-active"
+          id="tabInstrument"
+          role="tab"
+          aria-selected="true"
+          aria-controls="chartPanel"
+          type="button"
+        >
+          Instrument
+        </button>
+        <button
+          class="tab"
+          id="tabSandbox"
+          role="tab"
+          aria-selected="false"
+          aria-controls="chartPanel"
+          type="button"
+        >
+          Sandbox
+        </button>
+        <span class="tabs__spacer"></span>
+        <button
+          class="theme-toggle"
+          id="themeToggle"
+          type="button"
+          aria-label="Switch colour theme"
+          title="Switch colour theme"
+        >
+          <span class="theme-toggle__dot" aria-hidden="true"></span
+          ><span id="themeToggleLabel">Auto</span>
+        </button>
       </div>
-      <div class="readout__item readout__item--hero">
-        <span class="readout__label">Ratio <span class="readout__layer" id="roLayerTag">layer 2</span></span>
-        <span class="readout__value readout__value--hero" id="roRatio">&mdash;</span>
+    </nav>
+
+    <main>
+      <section class="guide" id="guide" aria-labelledby="guideTitle">
+        <div class="guide__index" id="guideIndex">01 / 03</div>
+        <div class="guide__body">
+          <p class="kicker">A ONE-MINUTE EXPERIMENT</p>
+          <h2 id="guideTitle">What changes when a word becomes familiar?</h2>
+          <p id="guideCopy">
+            Start with a word the model has not seen in this sequence. Then
+            repeat it. Watch the active fraction, without changing a single
+            weight.
+          </p>
+        </div>
+        <div class="guide__actions">
+          <button class="primary-btn" id="guideNext" type="button">
+            Start the experiment <span aria-hidden="true">↗</span></button
+          ><button class="linkbtn" id="guideDismiss" type="button">
+            Explore freely
+          </button>
+        </div>
+      </section>
+      <div class="section-label">
+        <span>01 / THE INSTRUMENT</span><span>COMPUTED IN YOUR BROWSER</span>
       </div>
-    </div>
-  </div>
 
-  <ul class="legend" id="legend">
-    <li class="legend__item">
-      <span class="legend__key legend__key--area" data-series="oracle" aria-hidden="true"></span>
-      <span class="legend__name">Oracle surprisal</span>
-      <span class="badge badge--analytic">ANALYTIC &middot; TRUTH</span>
-    </li>
-    <li class="legend__item">
-      <span class="legend__key" data-series="ce" aria-hidden="true"></span>
-      <span class="legend__name">Model cross-entropy</span>
-      <span class="badge badge--live">LIVE &middot; MODEL</span>
-    </li>
-    <li class="legend__item">
-      <span class="legend__key" data-series="act" aria-hidden="true"></span>
-      <span class="legend__name">Active neuron fraction</span>
-      <span class="badge badge--claim">LIVE &middot; THE CLAIM</span>
-    </li>
-  </ul>
-
-  <figure class="chart" id="chartWrap">
-    <div class="chart__status" id="chartStatus" role="status">
-      <span class="spinner" aria-hidden="true"></span>
-      <span id="chartStatusText">Loading precomputed weights (1.4&nbsp;MB)&hellip;</span>
-    </div>
-    <svg id="chartSvg" role="img" tabindex="0"
-         aria-label="Two stacked panels sharing one token axis. Top: active neuron fraction at the selected layer. Bottom: oracle surprisal and model cross-entropy, both in bits."></svg>
-    <div class="tooltip" id="tooltip" hidden></div>
-  </figure>
-
-  <p class="chart__notes">
-    <span class="note" id="noteTok0"><b>Token&nbsp;0 reads exactly 0.0%</b> in every layer &mdash; attention is
-    <code>tril(diagonal=-1)</code>, so token&nbsp;0 attends to nothing. That is a property of the code,
-    not a measurement, and it is <b>excluded</b> from the warm-up mean below.</span>
-    <span class="note" id="noteAlign">Cross-entropy is plotted against <b>the token being predicted</b>, so it lines up
-    with oracle surprisal. The forward pass itself indexes it by the position making the prediction.</span>
-  </p>
-
-  <div class="phasemeans">
-    <div class="phasemeans__row" id="phaseMeansRow"></div>
-    <button class="linkbtn" id="tableToggle" type="button" aria-expanded="false" aria-controls="tableView">Show data table</button>
-  </div>
-
-  <div class="tablewrap" id="tableView" hidden>
-    <table class="datatable">
-      <caption>Every value in the chart, per token. <span class="badge badge--live">LIVE</span></caption>
-      <thead>
-        <tr>
-          <th scope="col">Token</th><th scope="col">Letter</th><th scope="col">Phase</th>
-          <th scope="col">Active</th><th scope="col">of 1024</th>
-          <th scope="col">Model CE</th><th scope="col">Oracle</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
-  <!-- ========================== 3. FOUR CONTROLS ========================= -->
-  <div class="controls" id="controls">
-
-    <div class="control" id="ctrlLayer">
-      <span class="control__label" id="layerLabel">Layer
-        <span class="control__hint">which layer&rsquo;s <code>xy_sparse</code> is measured</span>
-      </span>
-      <div class="segmented" role="radiogroup" aria-labelledby="layerLabel" id="layerSeg">
-        <button role="radio" aria-checked="false" data-layer="0" type="button">0</button>
-        <button role="radio" aria-checked="false" data-layer="1" type="button">1</button>
-        <button role="radio" aria-checked="true"  data-layer="2" type="button" class="is-active">2</button>
-        <button role="radio" aria-checked="false" data-layer="3" type="button">3</button>
+      <!-- ======================= SANDBOX OFF-DISTRIBUTION BANNER =============== -->
+      <div class="offdist" id="offdistBanner" hidden>
+        <span class="badge badge--warn">OFF-DISTRIBUTION</span>
+        <p>
+          This model was trained only on the synthetic protocol above. Behaviour
+          here is <strong>not evidence for or against the claim.</strong>
+        </p>
       </div>
-      <p class="control__meta" id="layerMeta">layer 0 is where the claim fails</p>
-    </div>
 
-    <div class="control" id="ctrlRepeats">
-      <label class="control__label" for="repeatSlider">Repeat count
-        <span class="control__hint">how many times the word repeats</span>
-      </label>
-      <div class="slider">
-        <input type="range" id="repeatSlider" min="1" max="8" step="1" value="8">
-        <output class="slider__out" id="repeatOut" for="repeatSlider">8</output>
+      <!-- ============================ 2. MAIN CHART ============================ -->
+      <section class="panel panel--chart" id="chartPanel">
+        <div class="figure__head">
+          <div class="figure__titles">
+            <h2 class="figure__title">
+              A familiar word. Fewer active neurons.
+            </h2>
+            <p class="figure__sub" id="figureSub">
+              One cycle of the Section&nbsp;6.4 protocol, token by token.
+            </p>
+          </div>
+          <div class="readout" id="readout">
+            <div class="readout__item">
+              <span class="readout__label">Memorize</span>
+              <span class="readout__value" id="roMem">&mdash;</span>
+            </div>
+            <div class="readout__arrow" aria-hidden="true">&rarr;</div>
+            <div class="readout__item">
+              <span class="readout__label">Repeat</span>
+              <span class="readout__value" id="roRep">&mdash;</span>
+            </div>
+            <div class="readout__item readout__item--hero">
+              <span class="readout__label"
+                >Ratio
+                <span class="readout__layer" id="roLayerTag"
+                  >layer 2</span
+                ></span
+              >
+              <span class="readout__value readout__value--hero" id="roRatio"
+                >&mdash;</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <ul class="legend" id="legend">
+          <li class="legend__item">
+            <span
+              class="legend__key legend__key--area"
+              data-series="oracle"
+              aria-hidden="true"
+            ></span>
+            <span class="legend__name">Oracle surprisal</span>
+            <span class="badge badge--analytic">ANALYTIC &middot; TRUTH</span>
+          </li>
+          <li class="legend__item">
+            <span
+              class="legend__key"
+              data-series="ce"
+              aria-hidden="true"
+            ></span>
+            <span class="legend__name">Model cross-entropy</span>
+            <span class="badge badge--live">LIVE &middot; MODEL</span>
+          </li>
+          <li class="legend__item">
+            <span
+              class="legend__key"
+              data-series="act"
+              aria-hidden="true"
+            ></span>
+            <span class="legend__name">Active neuron fraction</span>
+            <span class="badge badge--claim">LIVE &middot; THE CLAIM</span>
+          </li>
+          <li class="legend__item">
+            <span
+              class="legend__key legend__key--dash"
+              aria-hidden="true"
+            ></span
+            ><span class="legend__name">ReLU Transformer activity</span
+            ><span class="badge badge--live">LIVE · CONTROL</span>
+          </li>
+        </ul>
+
+        <figure class="chart" id="chartWrap">
+          <div class="chart__status" id="chartStatus" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="chartStatusText"
+              >Loading precomputed weights (1.4&nbsp;MB)&hellip;</span
+            >
+          </div>
+          <svg
+            id="chartSvg"
+            role="img"
+            tabindex="0"
+            aria-label="Two stacked panels sharing one token axis. Top: BDH active neuron fraction as a solid line and ReLU Transformer activity as a dashed line at the selected layer. Bottom: oracle surprisal and model cross-entropy, both in bits."
+          ></svg>
+          <div class="tooltip" id="tooltip" hidden></div>
+        </figure>
+
+        <p class="chart__notes">
+          <span class="note" id="noteTok0"
+            ><b>BDH token&nbsp;0 reads exactly 0.0%</b> in every layer &mdash;
+            attention is <code>tril(diagonal=-1)</code>, so token&nbsp;0 attends
+            to nothing. That is a property of the code, not a measurement, and
+            it is <b>excluded</b> from the warm-up mean below.</span
+          >
+          <span class="note" id="noteAlign"
+            >Cross-entropy is plotted against <b>the token being predicted</b>,
+            so it lines up with oracle surprisal. The forward pass itself
+            indexes it by the position making the prediction.</span
+          >
+        </p>
+
+        <div class="phasemeans">
+          <div class="phasemeans__row" id="phaseMeansRow"></div>
+          <button
+            class="linkbtn"
+            id="tableToggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="tableView"
+          >
+            Show data table
+          </button>
+        </div>
+
+        <div class="tablewrap" id="tableView" hidden>
+          <table class="datatable">
+            <caption>
+              Measured fractions/counts and prediction values, per token.
+              <span class="badge badge--live">LIVE</span>
+            </caption>
+            <thead>
+              <tr>
+                <th scope="col">Token</th>
+                <th scope="col">Letter</th>
+                <th scope="col">Phase</th>
+                <th scope="col">Active</th>
+                <th scope="col">BDH / 1024</th>
+                <th scope="col">Transformer / 1024</th>
+                <th scope="col">Model CE</th>
+                <th scope="col">Oracle</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- ========================== 3. FOUR CONTROLS ========================= -->
+        <div class="controls" id="controls">
+          <div class="control" id="ctrlLayer">
+            <span class="control__label" id="layerLabel"
+              >Layer
+              <span class="control__hint"
+                >which layer&rsquo;s <code>xy_sparse</code> is measured</span
+              >
+            </span>
+            <div
+              class="segmented"
+              role="radiogroup"
+              aria-labelledby="layerLabel"
+              id="layerSeg"
+            >
+              <button
+                role="radio"
+                aria-checked="false"
+                data-layer="0"
+                type="button"
+              >
+                0
+              </button>
+              <button
+                role="radio"
+                aria-checked="false"
+                data-layer="1"
+                type="button"
+              >
+                1
+              </button>
+              <button
+                role="radio"
+                aria-checked="true"
+                data-layer="2"
+                type="button"
+                class="is-active"
+              >
+                2
+              </button>
+              <button
+                role="radio"
+                aria-checked="false"
+                data-layer="3"
+                type="button"
+              >
+                3
+              </button>
+            </div>
+            <p class="control__meta" id="layerMeta">
+              layer 0 is where the claim fails
+            </p>
+          </div>
+
+          <div class="control" id="ctrlRepeats">
+            <label class="control__label" for="repeatSlider"
+              >Repeat count
+              <span class="control__hint">how many times the word repeats</span>
+            </label>
+            <div class="slider">
+              <input
+                type="range"
+                id="repeatSlider"
+                min="1"
+                max="8"
+                step="1"
+                value="8"
+              />
+              <output class="slider__out" id="repeatOut" for="repeatSlider"
+                >8</output
+              >
+            </div>
+            <p class="control__meta" id="repeatMeta">T = 77 tokens</p>
+          </div>
+
+          <div class="control" id="ctrlWord">
+            <label class="control__label" for="wordInput"
+              >The word
+              <span class="control__hint"
+                >the memorized &ldquo;fact&rdquo;</span
+              >
+            </label>
+            <input
+              type="text"
+              id="wordInput"
+              value="mmgtfhhe"
+              maxlength="8"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              autocorrect="off"
+              aria-describedby="wordMsg"
+            />
+            <p class="control__meta" id="wordMsg">8 letters, a&ndash;z</p>
+          </div>
+
+          <div class="control" id="ctrlWeights">
+            <span class="control__label" id="weightsLabel"
+              >Weights
+              <span class="control__hint">the falsification control</span>
+            </span>
+            <div
+              class="segmented segmented--wide"
+              role="radiogroup"
+              aria-labelledby="weightsLabel"
+              id="weightsSeg"
+            >
+              <button
+                role="radio"
+                aria-checked="true"
+                data-weights="trained"
+                type="button"
+                class="is-active"
+              >
+                Trained
+              </button>
+              <button
+                role="radio"
+                aria-checked="false"
+                data-weights="untrained"
+                type="button"
+              >
+                Untrained
+              </button>
+            </div>
+            <p class="control__meta" id="weightsMeta">
+              2200 steps &middot; final loss 0.4964
+            </p>
+          </div>
+        </div>
+
+        <div class="control control--sandbox" id="sandboxControl" hidden>
+          <label class="control__label" for="sandboxInput"
+            >Your letters
+            <span class="control__hint">anything a&ndash;z, up to 96</span>
+          </label>
+          <input
+            type="text"
+            id="sandboxInput"
+            value="thequickbrownfoxjumpsoverthelazydog"
+            maxlength="96"
+            spellcheck="false"
+            autocapitalize="off"
+            autocomplete="off"
+            autocorrect="off"
+            aria-describedby="sandboxMsg"
+          />
+          <p class="control__meta" id="sandboxMsg">35 letters</p>
+        </div>
+      </section>
+
+      <section class="panel neuron-panel" aria-labelledby="neuronTitle">
+        <div class="neuron-intro">
+          <div>
+            <p class="kicker">INSIDE THE MEASUREMENT</p>
+            <h2 id="neuronTitle">Every square is a neuron.</h2>
+            <p class="figure__sub">
+              Filled means positive. Hollow means exactly zero.<br />These are
+              the actual gated activations, arranged by head.
+            </p>
+          </div>
+          <div class="neuron-stat">
+            <strong id="neuronCount">—</strong><span>of 1,024 active</span>
+          </div>
+        </div>
+        <div class="token-controls">
+          <button class="primary-btn" id="playTokens" type="button" disabled>
+            Play tokens</button
+          ><label for="tokenSlider"
+            >Token <output id="tokenOut">0</output></label
+          ><input
+            type="range"
+            id="tokenSlider"
+            min="0"
+            max="76"
+            value="13"
+            disabled
+            aria-describedby="gridStatus"
+          /><span class="token-letter" id="tokenLetter">—</span>
+        </div>
+        <div
+          class="token-strip"
+          id="tokenStrip"
+          aria-label="Sequence of letters; use the token slider to select"
+        ></div>
+        <div class="dual-grids">
+          <div>
+            <div class="grid-model-label">
+              <b>BDH</b><span>Gated product · 100,352 parameters</span>
+            </div>
+            <div
+              class="neuron-grid"
+              id="neuronGrid"
+              role="img"
+              aria-label="Neuron measurement loading"
+            ></div>
+          </div>
+          <div>
+            <div class="grid-model-label">
+              <b>ReLU Transformer</b
+              ><span>Hidden activation · 71,680 parameters</span>
+            </div>
+            <div
+              class="neuron-grid"
+              id="transformerGrid"
+              role="img"
+              aria-label="Transformer measurement loading"
+            ></div>
+            <p class="transformer-live-stat" id="transformerLiveStat">
+              Loading independent control…
+            </p>
+            <button class="linkbtn" id="retryTransformer" type="button" hidden>
+              Retry live control
+            </button>
+          </div>
+        </div>
+        <div class="grid-caption">
+          <p id="gridStatus" role="status">
+            Waiting for the live forward pass.
+          </p>
+          <span class="badge badge--pre">ANIMATED · LIVE-COMPUTED TENSOR</span>
+        </div>
+        <p class="note">
+          Token indices start at 0. Playback visits an existing measured tensor
+          at 8 tokens/second; it does not run inference each frame. Cell order:
+          head, then neuron. Brightness does not encode magnitude. Matching cell
+          positions do not imply corresponding neurons across models.
+        </p>
+      </section>
+      <div class="section-label">
+        <span>02 / THE MECHANISM</span><span>STRUCTURE ≠ CAUSAL PROOF</span>
       </div>
-      <p class="control__meta" id="repeatMeta">T = 77 tokens</p>
-    </div>
-
-    <div class="control" id="ctrlWord">
-      <label class="control__label" for="wordInput">The word
-        <span class="control__hint">the memorized &ldquo;fact&rdquo;</span>
-      </label>
-      <input type="text" id="wordInput" value="surprise" maxlength="8" spellcheck="false"
-             autocapitalize="off" autocomplete="off" autocorrect="off" aria-describedby="wordMsg">
-      <p class="control__meta" id="wordMsg">8 letters, a&ndash;z</p>
-    </div>
-
-    <div class="control" id="ctrlWeights">
-      <span class="control__label" id="weightsLabel">Weights
-        <span class="control__hint">the falsification control</span>
-      </span>
-      <div class="segmented segmented--wide" role="radiogroup" aria-labelledby="weightsLabel" id="weightsSeg">
-        <button role="radio" aria-checked="true" data-weights="trained" type="button" class="is-active">Trained</button>
-        <button role="radio" aria-checked="false" data-weights="untrained" type="button">Untrained</button>
+      <section class="panel panel--mech">
+        <div class="panel__head">
+          <h2>One activation. Two conditions.</h2>
+          <span class="badge badge--source">STRUCTURAL COMPARISON</span>
+        </div>
+        <p class="figure__sub">
+          Published equations, not a measurement. A ReLU hidden unit has one
+          positive condition; the BDH product requires both factors to be
+          positive.
+        </p>
+        <div class="equation-grid">
+          <article>
+            <p class="kicker">RELU TRANSFORMER · HIDDEN ACTIVATION</p>
+            <div
+              class="eq"
+              role="math"
+              aria-label="h equals ReLU of z times W one"
+            >
+              h = ReLU(zW₁)
+            </div>
+            <p>
+              One rectified projection. This is a simplified, bias-free hidden
+              expression; the published FFN also includes biases and an output
+              projection.
+            </p>
+            <a class="src" href="https://arxiv.org/html/1706.03762v7#S3.SS3"
+              >Vaswani et al. · §3.3, equation 2 ↗</a
+            >
+          </article>
+          <article>
+            <p class="kicker">BDH · MEASURED GATED PRODUCT</p>
+            <div
+              class="eq"
+              role="math"
+              aria-label="y equals positive part of D sub y times layer norm of a star, multiplied elementwise by x"
+            >
+              y = (D<sub>y</sub> · LN(a*))⁺ ⊙ x
+            </div>
+            <p>
+              Two non-negative factors. If either is zero, the product is zero.
+              We count this product, <code>xy_sparse</code>, across 1,024
+              neurons.
+            </p>
+            <a class="src" href="https://arxiv.org/html/2509.26507v1#S3.SS2"
+              >The Dragon Hatchling · Definition 4 ↗</a
+            >
+          </article>
+        </div>
+        <p class="mechanism-note">
+          The gate explains how zeros are possible. It does not establish why
+          repetition changes activity, guarantee a confidence-driven collapse,
+          or predict a Transformer’s measured ratio.
+        </p>
+        <details>
+          <summary>From the paper to the implementation</summary>
+          <p>
+            D<sub>x</sub> = <code>encoder</code>; D<sub>y</sub> =
+            <code>encoder_v</code>; E = <code>decoder</code>; measured y =
+            <code>xy_sparse</code>. All four layers share weights. Their inputs
+            differ because earlier layers transform the residual stream.
+          </p>
+        </details>
+      </section>
+      <section
+        class="panel comparison-panel"
+        id="comparisonPanel"
+        aria-labelledby="comparisonTitle"
+      >
+        <div class="panel__head">
+          <h2 id="comparisonTitle">A control, beyond the equation.</h2>
+          <span class="badge badge--pre">PRECOMPUTED · FIXED INPUT</span>
+        </div>
+        <p id="comparisonStatus">
+          Loading the fixed-sequence offline measurements…
+        </p>
+        <div id="comparisonResults"></div>
+        <p class="note">
+          This panel uses a fixed evaluation sequence and does not respond to
+          the live controls above. Shared width and neuron counts do not imply
+          equal parameter budgets.
+        </p>
+      </section>
+      <div class="section-label">
+        <span>03 / THE BOUNDARIES</span><span>READ THE COUNTEREXAMPLES</span>
       </div>
-      <p class="control__meta" id="weightsMeta">2200 steps &middot; final loss 0.4964</p>
-    </div>
+      <!-- ========================== 5. HONESTY PANEL =========================== -->
+      <section class="panel panel--honesty">
+        <div class="panel__head">
+          <h2>What this does not show</h2>
+          <span class="badge badge--warn">7 disclosed limitations</span>
+        </div>
+        <ol class="honesty">
+          <li>
+            <b>Layer 0 shows no effect</b> &mdash; confirming the paper&rsquo;s
+            own statement about higher layers. Switch the layer control to 0:
+            its phase means show no comparable drop. The shipped run measured
+            0.92&times;; we report that as <em>no effect</em>, not as an
+            inversion.
+          </li>
+          <li>
+            <b>64&times; neuron shrink</b> (65,536 &rarr; 1,024). This small
+            independent model measures 15.76% in memorize and 5.08% in repeat at
+            layer 2 on the canonical sequence. Absolute rates are specific to
+            this checkpoint and protocol.
+          </li>
+          <li>
+            <b>Synthetic task only</b> &mdash; no claim is made about BDH on
+            natural language. The corpus is a 13-letter warm-up plus a random
+            8-letter word, by design.
+          </li>
+          <li>
+            <b>BDH token 0 always reads 0.0%</b> &mdash; attention is
+            <code>tril(diagonal=-1)</code>, so token 0 attends to nothing. A
+            code property, not a finding. It is excluded from the warm-up mean
+            on this page: the canonical warm-up mean is <b>19.65%</b>. The
+            historical <b>18.14%</b> includes it. The Transformer attends to
+            itself and can have nonzero activity at token 0.
+          </li>
+          <li>
+            <b>Independent reimplementation</b> &mdash; faithful to
+            <code>pathwaycom/bdh</code> with a measurement hook added and the
+            config shrunk. <b>Not an official BDH model.</b>
+          </li>
+          <li>
+            <b>One small checkpoint and one synthetic protocol</b> — this
+            experiment does not establish a general law of intelligence, a
+            causal confidence meter, or a result about later BDH-family systems.
+          </li>
+          <li>
+            <b>Warm-up shows the highest activity, and we cannot say why.</b> On
+            the canonical run, layer 2 averages <b>19.65%</b> through warm-up
+            (excluding token 0; historically 18.14% including it) against
+            <b>5.08%</b> on repeats &mdash; yet the model&rsquo;s cross-entropy
+            on the warm-up is <b>0.113 bits</b>, <em>lower</em> than the
+            <b>0.766 bits</b> it spends on repeats. These phase means do not
+            support a simple uncertainty explanation.
+            <a href="https://arxiv.org/abs/2503.13431">Herrmann et al.</a> also
+            caution that next-token loss alone is a poor proxy for in-context
+            computation complexity.
+            <span class="honesty__corr"
+              >An earlier draft of this note explained the gap as
+              &ldquo;activity tracks the model&rsquo;s uncertainty, not the
+              oracle&rsquo;s.&rdquo; We measured that and it is false. It is
+              corrected here rather than quietly dropped.</span
+            >
+            One possible explanation is state re-establishment at the start of a
+            cold sequence &mdash; <b>untested, and labelled as such</b>. The
+            claim in the bar above is scoped to the
+            memorize&nbsp;&rarr;&nbsp;repeat transition precisely because of
+            this gap.
+          </li>
+        </ol>
+      </section>
 
-  </div>
+      <section class="resources" aria-labelledby="resourcesTitle">
+        <div>
+          <p class="kicker">THE RESEARCH, TAKEAWAY SIZE</p>
+          <h2 id="resourcesTitle">Inspect. Reproduce. Read further.</h2>
+        </div>
+        <div class="resources__links">
+          <a href="docs/concept-summary.pdf"
+            >Concept summary <span>PDF · one page ↗</span></a
+          ><a href="docs/blog.pdf"
+            >The experiment, explained <span>PDF · research story ↗</span></a
+          ><a href="https://github.com/jabssyyy/data-forge"
+            >Source &amp; reproduction
+            <span>Public GitHub repository ↗</span></a
+          >
+        </div>
+        <p>
+          These browser implementations use dense, full-sequence computation.
+          Active counts do not measure compute or energy savings.
+        </p>
+      </section>
 
-  <div class="control control--sandbox" id="sandboxControl" hidden>
-    <label class="control__label" for="sandboxInput">Your letters
-      <span class="control__hint">anything a&ndash;z, up to 96</span>
-    </label>
-    <input type="text" id="sandboxInput" value="thequickbrownfoxjumpsoverthelazydog" maxlength="96"
-           spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"
-           aria-describedby="sandboxMsg">
-    <p class="control__meta" id="sandboxMsg">35 letters</p>
-  </div>
+      <!-- ============================== FOOTER ================================= -->
+      <footer class="foot">
+        <div class="foot__grid">
+          <div class="foot__col">
+            <h3>What is live, and what is not</h3>
+            <dl class="keylist">
+              <dt><span class="badge badge--live">LIVE</span></dt>
+              <dd>
+                BDH and ReLU Transformer forward passes, running in your
+                browser. Input or weight changes compute the model; layer
+                changes reuse its measured output. Token playback animates that
+                output.
+              </dd>
+              <dt><span class="badge badge--analytic">ANALYTIC</span></dt>
+              <dd>
+                Oracle surprisal, in closed form from the sequence definition.
+                No model involved.
+              </dd>
+              <dt><span class="badge badge--pre">PRECOMPUTED</span></dt>
+              <dd>
+                Fixed trained and untrained weights shipped as JSON; offline
+                comparison results are labelled separately.
+              </dd>
+              <dt><span class="badge badge--syn">SYNTHETIC</span></dt>
+              <dd>
+                The letter corpus &mdash; the paper&rsquo;s Section 6.4
+                protocol, not natural language.
+              </dd>
+            </dl>
+          </div>
+          <div class="foot__col">
+            <h3>Sources</h3>
+            <ul class="foot__links">
+              <li>
+                <a href="https://arxiv.org/abs/2509.26507"
+                  >Kosowski et al. 2025 &mdash;
+                  <i
+                    >The Dragon Hatchling: The Missing Link between the
+                    Transformer and Models of the Brain</i
+                  ></a
+                >
+                <span
+                  >arXiv 2509.26507 &middot; Definition 4, &sect;6.4, Fig.
+                  14</span
+                >
+              </li>
+              <li>
+                <a href="https://arxiv.org/abs/2503.13431"
+                  >Herrmann, Csord&aacute;s, Schmidhuber 2025</a
+                >
+                <span
+                  >arXiv 2503.13431 &middot; Measuring In-Context Computation
+                  Complexity via Hidden State Prediction</span
+                >
+              </li>
+              <li>
+                <a href="https://arxiv.org/abs/2506.06644"
+                  >You et al. 2025 &mdash;
+                  <i
+                    >Spark Transformer: Reactivating Sparsity in FFN and
+                    Attention</i
+                  ></a
+                >
+                <span
+                  >arXiv 2506.06644 &middot; explicit top-k sparsity; a separate
+                  Transformer variant</span
+                >
+              </li>
+              <li>
+                <a href="https://github.com/pathwaycom/bdh">pathwaycom/bdh</a>
+                <span
+                  >MIT &middot; the reference implementation this ports</span
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="foot__col">
+            <h3>Provenance</h3>
+            <p class="foot__note">
+              Independent shrunk reimplementation for teaching &mdash;
+              <b>not an official BDH model</b>. n = 1024 neurons against the
+              paper&rsquo;s 65536.
+            </p>
+            <p class="foot__note">
+              Built with AI assistance: Claude (planning and specification),
+              Claude Code (implementation), and OpenAI Codex (audit,
+              experiments, UI, and documentation). Every number here is our own
+              measured output, or is cited to a primary source beside the claim
+              it supports.
+            </p>
+            <p class="foot__note foot__stamp" id="buildStamp"></p>
+          </div>
+        </div>
+      </footer>
+    </main>
 
-</section>
-
-<!-- ========================= 4. MECHANISM PANEL ========================== -->
-<section class="panel panel--mech">
-  <div class="panel__head">
-    <h2>Why the meter moves</h2>
-    <span class="badge badge--source">BDH &middot; Definition 4</span>
-  </div>
-
-  <div class="eq" role="math" aria-label="y at t and l equals the quantity D-sub-y times layer-norm of a-star at t and l, rectified, element-wise-multiplied by x at t and l">
-    <span class="eq__term"><i>y</i><sub>(<i>t</i>,<i>l</i>)</sub></span>
-    <span class="eq__rel">=</span>
-    <span class="eq__term">
-      <span class="eq__paren">(</span><span class="eq__mat">D<sub>y</sub></span><span class="eq__dot">&middot;</span><span class="eq__op">LN</span><span class="eq__paren">(</span><i>a</i><span class="eq__star">&lowast;</span><sub>(<i>t</i>,<i>l</i>)</sub><span class="eq__paren">)</span><span class="eq__paren">)</span><sup class="eq__plus">+</sup>
-    </span>
-    <span class="eq__odot">&#8857;</span>
-    <span class="eq__term"><i>x</i><sub>(<i>t</i>,<i>l</i>)</sub></span>
-  </div>
-  <p class="eq__gloss"><span class="eq__gloss-a">the readout gate</span><span class="eq__gloss-b">the neuron&rsquo;s own activation</span></p>
-
-  <ol class="mech">
-    <li><b>y</b> is the vector we count non-zeros in. It is two non-negative vectors multiplied
-        element-by-element &mdash; a gate that needs both sides to be positive.</li>
-    <li>When the recurrent state already predicts the next token, the left factor collapses
-        toward zero and the gate closes. <b>No sparsity setting causes this</b> &mdash; the equation
-        has no sparsity hyperparameter.</li>
-    <li>In the <code>pathwaycom/bdh</code> implementation, <b>D<sub>y</sub> is the variable called
-        <code>encoder_v</code></b> and <b>E is called <code>decoder</code></b>. The weights are shared
-        across all four layers &mdash; layer&nbsp;2 behaves differently from layer&nbsp;0 only because the
-        residual stream has been transformed by the layers before it.</li>
-  </ol>
-
-  <p class="src">(Definition 4, Dragon Hatchling paper,
-     <a href="https://arxiv.org/abs/2509.26507">arXiv 2509.26507</a>, p.18).
-     The variable measured here is <code>xy_sparse</code>, the <em>gated</em> product &mdash; not
-     <code>y_sparse</code>, which is only the left factor before the gate.</p>
-</section>
-
-<!-- ========================== 5. HONESTY PANEL =========================== -->
-<section class="panel panel--honesty">
-  <div class="panel__head">
-    <h2>What this does not show</h2>
-    <span class="badge badge--warn">7 disclosed limitations</span>
-  </div>
-  <ol class="honesty">
-    <li><b>Layer 0 shows no effect</b> &mdash; confirming the paper&rsquo;s own statement about higher
-        layers. Switch the layer control to 0 and watch the curve stay flat. The shipped run measured
-        0.92&times;; we report that as <em>no effect</em>, not as an inversion.</li>
-    <li><b>64&times; neuron shrink</b> (65536 &rarr; 1024). The <em>ratio</em> reproduces; absolute
-        levels differ &mdash; ours run roughly 3&times; the paper&rsquo;s percentages.</li>
-    <li><b>Synthetic task only</b> &mdash; no claim is made about BDH on natural language. The corpus
-        is a 13-letter warm-up plus a random 8-letter word, by design.</li>
-    <li><b>Token 0 always reads 0.0%</b> &mdash; attention is <code>tril(diagonal=-1)</code>, so token 0
-        attends to nothing. A code property, not a finding. It is excluded from the warm-up mean on
-        this page; the probe&rsquo;s published 18.14% figure includes it.</li>
-    <li><b>Independent reimplementation</b> &mdash; faithful to <code>pathwaycom/bdh</code> with a
-        measurement hook added and the config shrunk. <b>Not an official BDH model.</b></li>
-    <li><b>BDH-CQ</b> (Engdahl et al., 2026) is a later reasoning system in the same family; the
-        sparse-activation property here is a BDH result, not a BDH-CQ result. No public checkpoint
-        exists, so BDH-CQ is cited and never run.</li>
-    <li><b>Warm-up shows the highest activity, and we cannot say why.</b>
-        On the shipped run layer 2 sits at <b>18.14%</b> through warm-up against <b>5.08%</b> on
-        repeats &mdash; yet the model&rsquo;s cross-entropy on the warm-up is <b>0.113 bits</b>,
-        <em>lower</em> than the <b>0.766 bits</b> it spends on repeats. Activity there tracks neither
-        the oracle&rsquo;s uncertainty nor the model&rsquo;s.
-        <span class="honesty__corr">An earlier draft of this note explained the gap as
-        &ldquo;activity tracks the model&rsquo;s uncertainty, not the oracle&rsquo;s.&rdquo; We measured
-        that and it is false. It is corrected here rather than quietly dropped.</span>
-        The most plausible remaining explanation is state re-establishment at the start of a cold
-        sequence &mdash; <b>untested, and labelled as such</b>. The claim in the bar above is scoped to
-        the memorize&nbsp;&rarr;&nbsp;repeat transition precisely because of this gap.</li>
-  </ol>
-</section>
-
-<!-- ============================== FOOTER ================================= -->
-<footer class="foot">
-  <div class="foot__grid">
-    <div class="foot__col">
-      <h3>What is live, and what is not</h3>
-      <dl class="keylist">
-        <dt><span class="badge badge--live">LIVE</span></dt>
-        <dd>The BDH forward pass in <code>bdh.js</code>, running in your browser now. Change any
-            control and every curve is recomputed &mdash; nothing is replayed.</dd>
-        <dt><span class="badge badge--analytic">ANALYTIC</span></dt>
-        <dd>Oracle surprisal, in closed form from the sequence definition. No model involved.</dd>
-        <dt><span class="badge badge--pre">PRECOMPUTED</span></dt>
-        <dd>The two weight files, trained once on one CPU core and shipped as JSON.</dd>
-        <dt><span class="badge badge--syn">SYNTHETIC</span></dt>
-        <dd>The letter corpus &mdash; the paper&rsquo;s Section 6.4 protocol, not natural language.</dd>
-      </dl>
-    </div>
-    <div class="foot__col">
-      <h3>Sources</h3>
-      <ul class="foot__links">
-        <li><a href="https://arxiv.org/abs/2509.26507">Kosowski et al. 2025 &mdash; <i>The Dragon Hatchling</i></a>
-            <span>arXiv 2509.26507 &middot; Definition 4, &sect;6.4, Fig. 14</span></li>
-        <li><a href="https://arxiv.org/abs/2503.13431">Herrmann, Csord&aacute;s, Schmidhuber 2025</a>
-            <span>arXiv 2503.13431 &middot; input complexity vs predictability of internal representations</span></li>
-        <li><a href="https://arxiv.org/abs/2506.06644">You et al. 2025 &mdash; <i>Spark Transformer</i></a>
-            <span>arXiv 2506.06644 &middot; sparsity engineered into Transformer FFNs, for contrast</span></li>
-        <li><a href="https://github.com/pathwaycom/bdh">pathwaycom/bdh</a>
-            <span>MIT &middot; the reference implementation this ports</span></li>
-      </ul>
-    </div>
-    <div class="foot__col">
-      <h3>Provenance</h3>
-      <p class="foot__note">Independent shrunk reimplementation for teaching &mdash; <b>not an official
-         BDH model</b>. n = 1024 neurons against the paper&rsquo;s 65536.</p>
-      <p class="foot__note">Built with AI assistance: Claude (planning and specification),
-         Claude Code (implementation). Every number here is our own measured output, or is cited to a
-         primary source beside the claim it supports.</p>
-      <p class="foot__note foot__stamp" id="buildStamp"></p>
-    </div>
-  </div>
-</footer>
-
-</main>
-
-<script src="bdh.js"></script>
-<script src="app.js"></script>
-</body>
+    <script src="bdh.js"></script>
+    <script src="transformer.js"></script>
+    <script src="app.js"></script>
+  </body>
 </html>

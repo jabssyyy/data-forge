@@ -14,3 +14,8 @@ Thumbs.db
 
 # Backup files
 *.orig
+
+# Generated release and local verification outputs
+_site/
+test-results/
+node_modules/
