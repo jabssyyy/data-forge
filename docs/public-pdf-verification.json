@@ -1,0 +1,19 @@
+{
+  "commit": "68780b82834ae3d51334bab8a54c23a43d48719d",
+  "files": [
+    {
+      "file": "docs/concept-summary.pdf",
+      "sha256": "275d88e2e6804a986ad8cbd70f3346bbb7bb14d5391a91a4ef7e68bf3d5965f6",
+      "pages": 1,
+      "extracted_words": 714,
+      "anonymous_public_download_verified": true
+    },
+    {
+      "file": "docs/blog.pdf",
+      "sha256": "3fe9872d757e3499bf92ffe44dda35f77605e2f36f9cd7b44c49f8fa904ee3ef",
+      "pages": 3,
+      "extracted_words": 1700,
+      "anonymous_public_download_verified": true
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "url": "https://rawcdn.githack.com/jabssyyy/data-forge/68780b82834ae3d51334bab8a54c23a43d48719d/index.html",
+  "checked_at": "2026-09-08T11:22:57.331Z",
+  "errors": [],
+  "checks": [
+    {
+      "name": "Unauthenticated public page with both trained models",
+      "passed": true
+    },
+    {
+      "name": "Untrained models switch successfully",
+      "passed": true
+    },
+    {
+      "name": "docs/concept-summary.pdf",
+      "passed": true,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 6918
+    },
+    {
+      "name": "docs/blog.pdf",
+      "passed": true,
+      "status": 200,
+      "contentType": "application/pdf",
+      "bytes": 12626
+    },
+    {
+      "name": "Offline results loaded",
+      "passed": true
+    }
+  ],
+  "confirmation": true,
+  "readout": {
+    "ratio": "3.10×",
+    "grid": 185,
+    "bdhCount": 185,
+    "transformerGrid": 31,
+    "transformerCount": 31
+  },
+  "offline": "Canonical word mmgtfhhe · 8 occurrences · layer 2 · activity means\nModel\tMemorize\tRepeat\tRatio\nBDH · trained\t15.8%\t5.1%\t3.10×\nBDH · untrained\t24.8%\t24.0%\t1.04×\nReLU Transformer · trained\t2.0%\t1.3%\t1.58×\nReLU Transformer · untrained\t49.4%\t49.5%\t1.00×\n\nThe Transformer passed the predeclared prediction gate: evaluation CE 0.638 bits. Its attention, mask, head width, residual pathway and parameter budget differ from BDH.\n\nFull results, all layers & limitations ↗ · Predeclared protocol ↗",
+  "passed": true
+}

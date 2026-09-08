@@ -22,6 +22,7 @@ def build(destination):
         'docs/reproduction-check.json', 'docs/pdf-verification.md',
         'docs/execution-status.md', 'docs/submission-checklist.md', 'docs/defense-notes.md',
         'docs/browser-verification.json', 'docs/browser-edge-check.json',
+        'docs/public-preview-check.json', 'docs/public-pdf-verification.json',
     ]
     optional = [
         'transformer.js', 'weights_transformer.json', 'weights_transformer_untrained.json',
