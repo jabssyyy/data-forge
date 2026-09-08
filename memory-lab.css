@@ -17,7 +17,7 @@
   margin-bottom: 28px;
 }
 .memory-lab__intro h2 {
-  font-size: clamp(34px, 4vw, 54px);
+  font-size: clamp(40px, 4vw, 63.5px);
   font-weight: 500;
   line-height: 1.06;
   letter-spacing: -0.05em;
@@ -29,13 +29,13 @@
 }
 .memory-lab__intro p:not(.kicker) {
   color: var(--ink-2);
-  font-size: 14px;
+  font-size: 16.5px;
   line-height: 1.7;
   margin: 10px 0;
 }
 .memory-lab__intro .memory-lab__lead {
   color: var(--ink) !important;
-  font-size: 18px !important;
+  font-size: 21px !important;
   line-height: 1.5 !important;
 }
 .memory-lab__controls {
@@ -65,7 +65,7 @@
   border-radius: 5px;
   color: var(--ink-2);
   padding: 11px 16px;
-  font-size: 13px;
+  font-size: 15.5px;
   font-weight: 500;
 }
 .memory-lab__mode button[aria-pressed="true"] {
@@ -83,7 +83,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-2);
 }
 .memory-lab__head select {
@@ -94,7 +94,7 @@
   border-radius: 5px;
 }
 .memory-lab__mode-note {
-  font: 500 10px/1.5 var(--mono);
+  font: 500 13px/1.5 var(--mono);
   letter-spacing: 0.06em;
   color: var(--accent-ink);
   margin: 14px 0 22px;
@@ -114,15 +114,15 @@
   border-radius: 7px;
 }
 .memory-lab__decay label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--warn-ink);
 }
 .memory-lab__decay output {
-  font: 500 18px var(--mono);
+  font: 500 21px var(--mono);
   margin-left: 10px;
 }
 .memory-lab__decay p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   margin: 0;
   color: var(--warn-ink);
@@ -140,7 +140,7 @@
   flex-wrap: wrap;
 }
 .memory-lab__player > label {
-  font: 11px var(--mono);
+  font: 13px var(--mono);
   white-space: nowrap;
   color: var(--ink-2);
 }
@@ -158,7 +158,7 @@
   gap: 6px;
 }
 .memory-lab__milestones button {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-2);
   background: var(--surface-2);
   border: 1px solid var(--rule);
@@ -178,12 +178,12 @@
   outline-offset: 3px;
 }
 .memory-lab__context {
-  font: 10px/1.6 var(--mono);
+  font: 13px/1.6 var(--mono);
   color: var(--ink-2);
   margin: 15px 0 12px;
 }
 .memory-lab__status {
-  font: 10px/1.7 var(--mono);
+  font: 13px/1.7 var(--mono);
   color: var(--ink-2);
   min-height: 17px;
   margin: 10px 0 22px;
@@ -211,19 +211,19 @@
 .memory-lab__metrics span,
 .memory-lab__ce span {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-2);
   line-height: 1.5;
 }
 .memory-lab__metrics strong {
   display: block;
-  font: 500 23px/1.3 var(--mono);
+  font: 500 27px/1.3 var(--mono);
   letter-spacing: -0.05em;
   margin: 10px 0;
   color: var(--ink);
 }
 .memory-lab__metrics small {
-  font-size: 10px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--ink-2);
   display: block;
@@ -238,14 +238,14 @@
 }
 .memory-lab__interpret h3,
 .memory-lab__reading h3 {
-  font-size: 23px;
+  font-size: 27px;
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: -0.025em;
   margin: 12px 0;
 }
 .memory-lab__interpret p:not(.kicker) {
-  font-size: 14px;
+  font-size: 16.5px;
   line-height: 1.75;
   color: var(--ink-2);
 }
@@ -260,7 +260,7 @@
 }
 .memory-lab__ce strong {
   display: block;
-  font: 500 19px/1.5 var(--mono);
+  font: 500 22.5px/1.5 var(--mono);
   color: var(--ink);
   margin-top: 5px;
 }
@@ -279,7 +279,7 @@
 .memory-lab__reading li:before {
   content: "0" counter(memory-reading);
   display: block;
-  font: 500 11px var(--mono);
+  font: 500 13px var(--mono);
   color: var(--accent-ink);
   border-top: 2px solid var(--accent);
   padding-top: 13px;
@@ -287,12 +287,12 @@
 }
 .memory-lab__reading b {
   display: block;
-  font-size: 14px;
+  font-size: 16.5px;
   margin-bottom: 8px;
   font-weight: 500;
 }
 .memory-lab__reading span {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.75;
   color: var(--ink-2);
   display: block;
@@ -303,12 +303,12 @@
 }
 .memory-lab__science summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15.5px;
   font-weight: 500;
   line-height: 1.6;
 }
 .memory-lab__science p {
-  font-size: 13px;
+  font-size: 15.5px;
   line-height: 1.8;
   color: var(--ink-2);
   max-width: 850px;
@@ -343,7 +343,7 @@
     display: none;
   }
   .memory-lab__intro h2 {
-    font-size: 38px;
+    font-size: 45px;
   }
   .memory-lab__controls {
     flex-wrap: wrap;
@@ -354,7 +354,7 @@
   .memory-lab__mode button {
     flex: 1;
     padding: 10px 6px;
-    font-size: 12px;
+    font-size: 14px;
   }
   .memory-lab__interpret {
     grid-template-columns: 1fr;
@@ -368,7 +368,7 @@
     margin-bottom: 9px;
   }
   .memory-lab__metrics strong {
-    font-size: 19px;
+    font-size: 22.5px;
   }
   .memory-lab__metrics > div {
     padding: 14px 11px;
@@ -383,19 +383,19 @@
     flex-wrap: wrap;
   }
   .memory-lab__ce strong {
-    font-size: 17px;
+    font-size: 20px;
   }
   .memory-lab__decay {
     padding: 14px;
     gap: 12px;
   }
   .memory-lab__decay label {
-    font-size: 11px;
+    font-size: 13px;
   }
 }
 .memory-nav-link {
   align-self: center;
-  font: 500 12px var(--sans);
+  font: 500 14px var(--sans);
   color: var(--accent-ink);
   text-decoration: none;
   padding: 9px 12px;
@@ -408,7 +408,7 @@
 }
 @media (max-width: 560px) {
   .memory-nav-link {
-    font-size: 10px;
+    font-size: 13px;
     padding: 8px 6px;
   }
 }
@@ -417,7 +417,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   padding: 17px 0 23px;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--ink-2);
 }
@@ -451,18 +451,18 @@
     gap: 0;
   }
   .tabs__inner .tab {
-    font-size: 11px;
+    font-size: 13px;
     padding-left: 7px;
     padding-right: 7px;
   }
   .tabs__inner .theme-toggle {
-    font-size: 9px;
+    font-size: 13px;
     padding-left: 5px;
     padding-right: 5px;
     gap: 4px;
   }
   .memory-nav-link {
-    font-size: 9px;
+    font-size: 13px;
     padding: 7px 5px;
   }
 }

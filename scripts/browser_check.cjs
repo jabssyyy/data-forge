@@ -97,7 +97,7 @@ fs.mkdirSync(output, { recursive: true });
       state.weights === "trained" &&
       state.result.T === 21,
   );
-  assert.match(await page.locator("#roRatio").innerText(), /—|–|N\/A/);
+  assert.match(await page.locator("#roRatio").innerText(), /·|N\/A/);
   await page.locator("#guideNext").click();
   await page.waitForFunction(
     () => state.repeats === 8 && state.result.T === 77,
@@ -185,7 +185,7 @@ fs.mkdirSync(output, { recursive: true });
   await failed.waitForFunction(() =>
     document.querySelector("#chartStatus").textContent.includes("503"),
   );
-  assert.strictEqual(await failed.locator("#roRatio").innerText(), "—");
+  assert.strictEqual(await failed.locator("#roRatio").innerText(), "·");
   assert(await failed.locator("#playTokens").isDisabled());
   await failed.close();
   const report = {

@@ -7,7 +7,7 @@
       ? Math.abs(n) < 0.001 && n !== 0
         ? n.toExponential(2)
         : n.toFixed(3)
-      : "—";
+      : "·";
   const svgEl = (tag, attrs) => {
     const el = document.createElementNS(NS, tag);
     Object.entries(attrs || {}).forEach(([k, v]) => el.setAttribute(k, v));
@@ -17,7 +17,7 @@
     let data = null,
       selected = null;
     container.classList.add("memory-graph");
-    container.innerHTML = `<div class="memory-graph__main"><div class="memory-graph__top"><span class="memory-graph__eyebrow">A WINDOW INTO THE MEMORY STATE</span><span class="memory-graph__step"></span></div><div class="memory-graph__canvas"></div><div class="memory-graph__legend"><span><i class="memory-graph__swatch"></i>Positive value</span><span><i class="memory-graph__swatch is-negative"></i>Negative value</span><span>Thicker = larger magnitude</span><span>Cue → gate memory</span><span><i class="memory-graph__activity-dot"></i>Active gate now</span></div><p class="memory-graph__caption">Fixed positions let you track the same coordinates over time. Select a node or connection to inspect its measured value.</p></div><aside class="memory-graph__inspector" aria-label="Memory connection details"><p class="memory-graph__eyebrow">READ THE GRAPH</p><h3 class="memory-graph__detail-title">Follow a connection.</h3><div class="memory-graph__detail" aria-live="polite"></div></aside><details class="memory-graph__table-wrap"><summary>Inspect the displayed connections as numbers</summary><div class="memory-graph__table-scroll"><table><caption>Measured values for the visible memory connections</caption><thead><tr><th scope="col">Connection</th><th scope="col">Value</th><th scope="col">Previous</th><th scope="col">Magnitude change</th></tr></thead><tbody></tbody></table></div></details>`;
+    container.innerHTML = `<div class="memory-graph__main"><div class="memory-graph__top"><span class="memory-graph__eyebrow">A WINDOW INTO THE MEMORY STATE</span><span class="memory-graph__step"></span></div><div class="memory-graph__zoom" role="group" aria-label="Zoom and pan controls"><button type="button" class="memory-graph__zoom-btn" data-zoom="out">Zoom out</button><span class="memory-graph__zoom-level" aria-live="polite" aria-atomic="true">Zoom: 100%</span><button type="button" class="memory-graph__zoom-btn" data-zoom="in">Zoom in</button><button type="button" class="memory-graph__zoom-btn" data-zoom="reset">Reset</button></div><div class="memory-graph__canvas"></div><div class="memory-graph__legend"><span><i class="memory-graph__swatch"></i>Positive value</span><span><i class="memory-graph__swatch is-negative"></i>Negative value</span><span>Thicker = larger magnitude</span><span>Cue → gate memory</span><span><i class="memory-graph__activity-dot"></i>Active gate now</span></div><p class="memory-graph__caption">Fixed positions let you track the same coordinates over time. Select a node or connection to inspect its measured value.</p></div><aside class="memory-graph__inspector" aria-label="Memory connection details"><p class="memory-graph__eyebrow">READ THE GRAPH</p><h3 class="memory-graph__detail-title">Follow a connection.</h3><div class="memory-graph__detail" aria-live="polite"></div></aside><details class="memory-graph__table-wrap"><summary>Inspect the displayed connections as numbers</summary><div class="memory-graph__table-scroll"><table><caption>Measured values for the visible memory connections</caption><thead><tr><th scope="col">Connection</th><th scope="col">Value</th><th scope="col">Previous</th><th scope="col">Magnitude change</th></tr></thead><tbody></tbody></table></div></details>`;
     const canvas = container.querySelector(".memory-graph__canvas");
     const svg = svgEl("svg", {
       viewBox: "0 0 760 450",
@@ -26,6 +26,188 @@
         "Measured memory connections. Use Tab to select a node or connection.",
     });
     canvas.append(svg);
+    // Zoom and pan only ever change the viewBox: the viewport onto the
+    // measurement, never a drawn coordinate, width, or value. baseWidth is
+    // the unzoomed extent draw() last used; baseHeight matches the fixed
+    // 450 in the viewBox above.
+    const MIN_ZOOM = 1,
+      MAX_ZOOM = 4,
+      baseHeight = 450;
+    let zoomScale = 1,
+      panX = 0,
+      panY = 0,
+      baseWidth = 760;
+    const zoomOutBtn = container.querySelector('[data-zoom="out"]');
+    const zoomInBtn = container.querySelector('[data-zoom="in"]');
+    const zoomResetBtn = container.querySelector('[data-zoom="reset"]');
+    const zoomLevel = container.querySelector(".memory-graph__zoom-level");
+    function clampPan() {
+      const viewW = baseWidth / zoomScale,
+        viewH = baseHeight / zoomScale;
+      panX = Math.min(Math.max(panX, 0), Math.max(0, baseWidth - viewW));
+      panY = Math.min(Math.max(panY, 0), Math.max(0, baseHeight - viewH));
+    }
+    function applyViewBox() {
+      clampPan();
+      svg.setAttribute(
+        "viewBox",
+        `${panX} ${panY} ${baseWidth / zoomScale} ${baseHeight / zoomScale}`,
+      );
+      zoomLevel.textContent = `Zoom: ${Math.round(zoomScale * 100)}%`;
+      canvas.classList.toggle("is-zoomed", zoomScale > 1);
+    }
+    // anchorFx/Fy (0..1) is the point, as a fraction of the viewport, that
+    // stays under the pointer (or centred) while the scale changes.
+    function setZoom(next, anchorFx, anchorFy) {
+      const clamped = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, next));
+      if (clamped === zoomScale) return;
+      const fx = anchorFx ?? 0.5,
+        fy = anchorFy ?? 0.5;
+      const viewW = baseWidth / zoomScale,
+        viewH = baseHeight / zoomScale;
+      const ux = panX + fx * viewW,
+        uy = panY + fy * viewH;
+      zoomScale = clamped;
+      const nextW = baseWidth / zoomScale,
+        nextH = baseHeight / zoomScale;
+      panX = ux - fx * nextW;
+      panY = uy - fy * nextH;
+      applyViewBox();
+    }
+    function resetZoom() {
+      zoomScale = 1;
+      panX = 0;
+      panY = 0;
+      applyViewBox();
+    }
+    zoomOutBtn.addEventListener("click", () => setZoom(zoomScale / 1.3));
+    zoomInBtn.addEventListener("click", () => setZoom(zoomScale * 1.3));
+    zoomResetBtn.addEventListener("click", resetZoom);
+    function fractionAt(clientX, clientY) {
+      const rect = svg.getBoundingClientRect();
+      if (!rect.width || !rect.height) return { fx: 0.5, fy: 0.5 };
+      return {
+        fx: Math.min(1, Math.max(0, (clientX - rect.left) / rect.width)),
+        fy: Math.min(1, Math.max(0, (clientY - rect.top) / rect.height)),
+      };
+    }
+    // A plain wheel must keep scrolling the page, so only claim the event
+    // (and only preventDefault) once we know it is a zoom gesture.
+    canvas.addEventListener(
+      "wheel",
+      (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        e.preventDefault();
+        const { fx, fy } = fractionAt(e.clientX, e.clientY);
+        setZoom(zoomScale * Math.exp(-e.deltaY * 0.0025), fx, fy);
+      },
+      { passive: false },
+    );
+    let dragging = false,
+      dragMoved = false,
+      dragPointerId = null,
+      dragStartX = 0,
+      dragStartY = 0,
+      dragStartPanX = 0,
+      dragStartPanY = 0;
+    function unitsPerPixel() {
+      const rect = svg.getBoundingClientRect();
+      return rect.width ? baseWidth / zoomScale / rect.width : 0;
+    }
+    canvas.addEventListener("pointerdown", (e) => {
+      if (zoomScale <= 1) return; // nothing to pan at 100%
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      dragging = true;
+      dragMoved = false;
+      dragPointerId = e.pointerId;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      dragStartPanX = panX;
+      dragStartPanY = panY;
+      canvas.classList.add("is-dragging");
+      try {
+        canvas.setPointerCapture(e.pointerId);
+      } catch (err) {
+        /* pointer capture is a nicety, not a requirement */
+      }
+    });
+    canvas.addEventListener("pointermove", (e) => {
+      if (!dragging || e.pointerId !== dragPointerId) return;
+      const dx = e.clientX - dragStartX,
+        dy = e.clientY - dragStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+      const upp = unitsPerPixel();
+      panX = dragStartPanX - dx * upp;
+      panY = dragStartPanY - dy * upp;
+      applyViewBox();
+    });
+    function endDrag(e) {
+      if (e.pointerId !== dragPointerId) return;
+      dragging = false;
+      dragPointerId = null;
+      canvas.classList.remove("is-dragging");
+    }
+    canvas.addEventListener("pointerup", endDrag);
+    canvas.addEventListener("pointercancel", endDrag);
+    // A drag that actually moved the view should not also fire the node or
+    // edge click it started on; a capturing listener runs before theirs.
+    canvas.addEventListener(
+      "click",
+      (e) => {
+        if (dragMoved) {
+          e.stopPropagation();
+          dragMoved = false;
+        }
+      },
+      true,
+    );
+    canvas.setAttribute("tabindex", "0");
+    canvas.setAttribute("role", "group");
+    canvas.setAttribute(
+      "aria-label",
+      "Graph viewport. Press plus or minus to zoom, arrow keys to pan when zoomed in.",
+    );
+    canvas.addEventListener("keydown", (e) => {
+      // Only act when the viewport itself is focused, not a node or edge
+      // inside it, so their existing keyboard behaviour is untouched.
+      if (e.target !== canvas) return;
+      const PAN_STEP = 40 / zoomScale;
+      switch (e.key) {
+        case "+":
+        case "=":
+          e.preventDefault();
+          setZoom(zoomScale * 1.3);
+          return;
+        case "-":
+        case "_":
+          e.preventDefault();
+          setZoom(zoomScale / 1.3);
+          return;
+        case "0":
+          e.preventDefault();
+          resetZoom();
+          return;
+        case "ArrowLeft":
+          e.preventDefault();
+          panX -= PAN_STEP;
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          panX += PAN_STEP;
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          panY -= PAN_STEP;
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          panY += PAN_STEP;
+          break;
+        default:
+          return;
+      }
+      applyViewBox();
+    });
     const detail = container.querySelector(".memory-graph__detail");
     const title = container.querySelector(".memory-graph__detail-title");
     function p(text, className) {
@@ -214,7 +396,7 @@
     function draw() {
       if (!data) return;
       const width = Math.max(220, Math.min(760, canvas.clientWidth || 760));
-      svg.setAttribute("viewBox", `0 0 ${width} 450`);
+      baseWidth = width;
       const leftX = width * 0.24,
         rightX = width * 0.76;
       const focused = document.activeElement?.getAttribute("data-memory-key");
@@ -376,6 +558,7 @@
         Array.from(svg.querySelectorAll("[data-memory-key]"))
           .find((e) => e.getAttribute("data-memory-key") === focused)
           ?.focus();
+      applyViewBox();
     }
     let lastWidth = canvas.clientWidth;
     const observer =

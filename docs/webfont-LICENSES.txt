@@ -1,0 +1,48 @@
+Web fonts requested by index.html
+=================================
+
+The page requests three families from Google Fonts and falls back to system
+fonts when the network is unavailable. No font files are redistributed in this
+repository. Each family is licensed under the SIL Open Font License, Version
+1.1; the full OFL text is retained once in ibm-plex-LICENSE.txt and applies to
+all three.
+
+Copyright and license lines below are quoted verbatim from each project's
+OFL.txt, retrieved 2026-09-08.
+
+
+Literata (page and section headings)
+------------------------------------
+Copyright 2017 The Literata Project Authors (https://github.com/googlefonts/literata)
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+Drawn by TypeTogether for long-form screen reading.
+Upstream: https://github.com/googlefonts/literata
+Notice:   https://github.com/google/fonts/blob/main/ofl/literata/OFL.txt
+
+
+Atkinson Hyperlegible Next (interface text)
+-------------------------------------------
+Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next)
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+Commissioned by the Braille Institute of America and drawn for maximum
+distinction between letterforms at reading sizes.
+Upstream: https://github.com/googlefonts/atkinson-hyperlegible-next
+Notice:   https://github.com/google/fonts/blob/main/ofl/atkinsonhyperlegiblenext/OFL.txt
+
+
+Atkinson Hyperlegible Mono (every measured number)
+--------------------------------------------------
+Copyright 2020-2024 The Atkinson Hyperlegible Mono Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next-mono)
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+
+Upstream: https://github.com/googlefonts/atkinson-hyperlegible-next-mono
+Notice:   https://github.com/google/fonts/blob/main/ofl/atkinsonhyperlegiblemono/OFL.txt
+
+
+Retained OFL text
+-----------------
+ibm-plex-LICENSE.txt in this directory carries the full SIL Open Font License
+1.1 text. It was kept from an earlier revision that used IBM Plex; the licence
+body is the same instrument that governs all three families above.

@@ -6,7 +6,7 @@
       ? Math.abs(value) >= 1000
         ? value.toExponential(2)
         : value.toFixed(3)
-      : "—";
+      : "·";
   function mount(container, bridge) {
     const find = (id) => container.querySelector("#" + id);
     const graph = window.MemoryGraphView.mount(find("memoryGraph"));
@@ -56,7 +56,7 @@
         "memoryNativeCE",
         "memoryChanges",
         "memoryRetention",
-      ].forEach((id) => (find(id).textContent = "—"));
+      ].forEach((id) => (find(id).textContent = "·"));
       find("memoryInterpretation").textContent =
         "The interpretation will update with the measured memory state.";
       find("memoryVerdict").textContent =
@@ -201,7 +201,7 @@
         "memoryNativeCE",
         "memoryChanges",
         "memoryRetention",
-      ].forEach((id) => (find(id).textContent = "—"));
+      ].forEach((id) => (find(id).textContent = "·"));
       find("memoryVerdict").textContent =
         "Waiting for the selected experiment’s prediction error.";
       find("memoryContext").textContent =

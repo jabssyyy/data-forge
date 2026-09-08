@@ -18,9 +18,12 @@ The artifact and required documents are built and published in the public source
 | Trained/random Transformer parity | Passed | Exact counts/zeros, dimensions/finite/scale/logits/CE, operator mutations |
 | Browser grids and controls | Passed | 616 layer/token/weight states checked for both grids |
 | Mobile viewport and themes | Passed | 380px, 768px, 1440px, light/dark; no horizontal overflow |
+| Interface pass (type, surfaces, motion, page furniture) | Built; browser suite not re-run | ui.js/ui.css, identity layer in style.css, og-preview.png; numerical suites and structural checks pass |
 | Real phone | Not performed | Browser viewport emulation is not a real device check |
 | Fresh public-clone training | Passed with drift disclosed | reproduction-check.json: 3.365854× on current runtime |
 | External event portal submission | Not performed | No portal submission requested |
+
+The interface pass recorded in `execution-status.md` is newer than the release commit below. It has not been published, re-checked in a browser, or included in the public preview linked here.
 
 Release commit: `67e4736b5ffc1e676d124868e78caa9ae349ab00`. The [GitHub Actions run](https://github.com/jabssyyy/data-forge/actions/runs/34227442243) passed both numerical engines plus the64case memory reconstruction suite and static assembly on Ubuntu, then failed at Pages configuration. No model test failed.
 

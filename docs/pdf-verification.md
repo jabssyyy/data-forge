@@ -1,4 +1,4 @@
-# PDF verification — 2026-09-08
+# PDF verification, 2026-09-08
 
 Generated with `python3 scripts/build_pdfs.py`, Python 3.12.4 and ReportLab 5.0.0. Editable Markdown remains beside each PDF. The generator enforces exactly one concept page and uses selectable text and clickable source links. Mathematical symbols unsupported by standard PDF fonts are rendered as explicit text (for example, “elementwise product”).
 

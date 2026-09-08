@@ -14,6 +14,7 @@ def build(destination):
     destination.mkdir(parents=True, exist_ok=True)
     required = [
         'index.html', 'style.css', 'app.js', 'bdh.js', 'favicon.svg',
+        'ui.js', 'ui.css', 'og-preview.png',
         'memory.js', 'graph-view.js', 'graph-view.css', 'memory-lab.js', 'memory-lab.css',
         'docs/memory-explainer.md', 'docs/memory-verification.json',
         'docs/memory-browser-verification.json',
@@ -27,6 +28,8 @@ def build(destination):
         'docs/execution-status.md', 'docs/submission-checklist.md', 'docs/defense-notes.md',
         'docs/browser-verification.json', 'docs/browser-edge-check.json',
         'docs/public-preview-check.json', 'docs/public-pdf-verification.json',
+        'docs/ui-verification.json', 'docs/webfont-LICENSES.txt',
+        'docs/contrast-verification.json',
     ]
     optional = [
         'transformer.js', 'weights_transformer.json', 'weights_transformer_untrained.json',

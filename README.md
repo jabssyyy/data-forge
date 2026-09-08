@@ -1,6 +1,6 @@
 # Sparsity Is Not a Budget
 
-> **In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.**
+> **In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable, with the same weights, the same input length, and no sparsity setting touched anywhere.**
 
 [Public source repository](https://github.com/jabssyyy/data-forge) · [Open the public demo](https://rawcdn.githack.com/jabssyyy/data-forge/67e4736b5ffc1e676d124868e78caa9ae349ab00/index.html) · [Concept PDF](docs/concept-summary.pdf) · [Blog PDF](docs/blog.pdf)
 
@@ -18,13 +18,20 @@ No build step, backend, browser training, or JavaScript dependencies are require
 python3 -m http.server 8000
 ```
 
-Open http://localhost:8000. Serve through HTTP so relative JSON fetches work. Browser computation uses `Float32Array` in `bdh.js`; `app.js`, `index.html`, and `style.css` provide the controls and charts. Default inference starts after weights load. Google Fonts is optional, with system font fallbacks.
+Open http://localhost:8000. Serve through HTTP so relative JSON fetches work. Browser computation uses `Float32Array` in `bdh.js`; `app.js`, `index.html`, and `style.css` provide the controls and charts. Default inference starts after weights load. Google Fonts is optional, with system font fallbacks. Headings are set in Literata and the interface and every measured number in Atkinson Hyperlegible Next and Mono, which were drawn for letter distinction at reading sizes.
+
+The page sets no cookies, loads no analytics, and has no accounts. It writes two values to `localStorage`: the colour theme you chose and whether you dismissed the privacy note. Nothing is transmitted. Requesting the three web fonts exposes your IP address to Google Fonts; the system fallback stack renders the page correctly offline.
+
+Both figures zoom. The activity chart stretches its token axis from 100% to 400% and scrolls, so a crowded stretch of the sequence can be opened up without changing the type size or the value axis; it also opens full screen. The memory graph zooms and pans over the same drawing. Neither changes a computed value: zoom moves the viewport, not the data.
+
+Keyboard control covers every real variable. Left and right arrows step the selected token, `Shift` jumps ten, `Space` plays or pauses playback, `0` to `3` choose the measured layer, `W` switches trained and untrained weights, `S` switches instrument and sandbox, `M` jumps to the memory lab, `T` cycles the theme, `G` returns to the top, and `?` opens the full list. Each shortcut dispatches the same event the corresponding control would, so there is no second path into the model.
 
 ## Component map
 
 | Component | Role |
 |---|---|
 | `index.html`, `style.css`, `app.js` | Accessible static page, controls, guide, chart, dual grids, data table, caching and playback |
+| `ui.js`, `ui.css` | Page furniture only: section menu, keyboard shortcuts, outbound links, toasts, privacy note, reading indicator, question accordion, skeleton and empty states. Computes and reports no measurement |
 | `bdh.js`, `transformer.js` | Local forward passes using exported weights; no browser training |
 | `memory.js` | Reconstructs centered BDH context projections and verifies their attention read |
 | `memory-lab.js`, `graph-view.js`, their CSS | Memory controls, signed graph and edge inspector, selected-token interpretation, hypothetical decay comparison |
@@ -33,6 +40,9 @@ Open http://localhost:8000. Serve through HTTP so relative JSON fetches work. Br
 | `parity_test.js`, `transformer_parity_test.js`, `memory_test.js` | Numerical agreement, failure-detection and state-reconstruction checks |
 | `scripts/browser*_check.cjs`, `scripts/memory_browser_check.cjs` | Browser interaction and viewport verification; separate from numerical validation |
 | `scripts/build_pdfs.py`, `docs/*.md` | Editable deliverables, references, licenses, reproducible PDF exports and evidence |
+| `scripts/build_og_image.py`, `og-preview.png` | Link-preview card, plotted from the shipped `results.json` layer-2 series rather than drawn by hand |
+| `scripts/contrast_check.py` | Resolves the colour tokens the way the cascade does and fails if any ink falls under 4.5:1 or any series hue under 3:1 against its own surface |
+| `scripts/ui_check.cjs` | Browser check for the interface: type roles, the 13px reading floor, chart zoom, outbound links, keyboard control, and that none of it moves a measured value |
 | `scripts/build_site.py`, `.github/workflows/pages.yml` | Static release allowlist and GitHub Pages build/deployment workflow |
 
 ## What the signals mean

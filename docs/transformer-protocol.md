@@ -1,4 +1,4 @@
-# Transformer protocol — declared before training
+# Transformer protocol, declared before training
 
 2026-09-08. One seed (0), one 2,200-step run; no extensions, restarts, seed selection or hyperparameter search. Activation ratios are not optimization targets.
 

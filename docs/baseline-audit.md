@@ -1,4 +1,4 @@
-# Baseline audit — 2026-09-08
+# Baseline audit, 2026-09-08
 
 The user authorized the full phase plan, including parallel agents and optional enhancements. The individual stop-after-phase instructions are superseded by that authorization. Work proceeds in this repository, preserving the numerical baseline.
 

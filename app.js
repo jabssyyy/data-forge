@@ -53,6 +53,7 @@ const state = {
   hover: null, // hovered token index, or null
   result: null, // last successful compute
   warmup: null, // the 13 fixed warm-up token ids, from the weight file
+  chartZoom: 1, // horizontal magnification of the token axis, 1 to 4
 };
 
 const modelLoads = {};
@@ -253,7 +254,13 @@ function compute() {
 /* ============================== CHART ================================= */
 
 const FONT_MONO =
-  "'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  "'Atkinson Hyperlegible Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+
+/* Chart label sizes. The axis and annotation type is set here rather than in
+ * CSS because the SVG is built as a string with baked-in attributes. */
+const T_TICK = 13; // axis tick numbers
+const T_LABEL = 13; // panel captions and phase names
+const T_VALUE = 14; // the two phase-mean values drawn on the curve
 
 /* Axis ticks land on round numbers or they are not worth printing. Pick the
  * smallest offered step that covers the data in at most `maxIntervals`
@@ -291,7 +298,10 @@ function pickXTicks(T, plotW, isInstrument) {
 function renderChart() {
   const r = state.result;
   const wrap = el.chartWrap;
-  const W = Math.max(300, wrap.clientWidth - 16);
+  /* Zoom stretches the token axis and lets the figure scroll, rather than
+   * scaling the whole drawing. Tokens spread out, the type stays the size it
+   * was set at, and the value axis keeps its position. */
+  const W = Math.max(300, (wrap.clientWidth - 16) * state.chartZoom);
   const narrow = W < 520;
 
   /* geometry */
@@ -431,7 +441,7 @@ function renderChart() {
           topH - 5,
           label.toUpperCase(),
           cInk3,
-          9.5,
+          T_LABEL,
           "middle",
           ' letter-spacing="0.09em"',
         );
@@ -445,13 +455,13 @@ function renderChart() {
     const v = sA.step * k;
     const yy = yA(v);
     line(padL, yy, padL + plotW, yy, k === 0 ? cAxis : cGrid, 1);
-    text(padL - 7, yy + 3.5, Math.round(v * 100) + "%", cInk3, 9.5, "end");
+    text(padL - 7, yy + 4.5, Math.round(v * 100) + "%", cInk3, T_TICK, "end");
   }
   for (let k = 0; k <= sB.ticks; k++) {
     const v = sB.step * k;
     const yy = yB(v);
     line(padL, yy, padL + plotW, yy, k === 0 ? cAxis : cGrid, 1);
-    text(padL - 7, yy + 3.5, String(v), cInk3, 9.5, "end");
+    text(padL - 7, yy + 4.5, String(v), cInk3, T_TICK, "end");
   }
 
   /* panel captions */
@@ -462,7 +472,7 @@ function renderChart() {
       (bTop - 11) +
       '" fill="' +
       cInk3 +
-      '" font-size="9.5" font-family="' +
+      '" font-size="' + T_LABEL + '" font-family="' +
       FONT_MONO +
       '" letter-spacing="0.08em">BITS</text>',
   );
@@ -473,7 +483,7 @@ function renderChart() {
       (bTop - 11) +
       '" fill="' +
       cInk3 +
-      '" font-size="9.5" text-anchor="end" font-family="' +
+      '" font-size="' + T_LABEL + '" text-anchor="end" font-family="' +
       FONT_MONO +
       '" letter-spacing="0.08em">' +
       (isInstrument ? "TRUTH vs MODEL" : "MODEL ONLY") +
@@ -484,7 +494,7 @@ function renderChart() {
       padL +
       '" y="11" fill="' +
       cInk3 +
-      '" font-size="9.5" font-family="' +
+      '" font-size="' + T_LABEL + '" font-family="' +
       FONT_MONO +
       '" letter-spacing="0.08em">ACTIVE NEURONS, LAYER ' +
       state.layer +
@@ -496,7 +506,7 @@ function renderChart() {
         (padL + plotW) +
         '" y="11" fill="' +
         cInk3 +
-        '" font-size="9.5" text-anchor="end" font-family="' +
+        '" font-size="' + T_LABEL + '" text-anchor="end" font-family="' +
         FONT_MONO +
         '" letter-spacing="0.08em">% OF ' +
         N_TOTAL +
@@ -520,9 +530,11 @@ function renderChart() {
       " " +
       yB(0).toFixed(1) +
       " Z";
-    out.push('<path d="' + area + '" fill="' + cOrWash + '"/>');
     out.push(
-      '<path d="' +
+      '<path class="ln ln--or" d="' + area + '" fill="' + cOrWash + '"/>',
+    );
+    out.push(
+      '<path class="ln ln--or" d="' +
         d +
         '" fill="none" stroke="' +
         cOr +
@@ -543,7 +555,7 @@ function renderChart() {
     }
     if (started) {
       out.push(
-        '<path d="' +
+        '<path class="ln ln--ce" d="' +
           d +
           '" fill="none" stroke="' +
           cCe +
@@ -568,9 +580,11 @@ function renderChart() {
       " " +
       yA(0).toFixed(1) +
       " Z";
-    out.push('<path d="' + area + '" fill="' + cActWash + '"/>');
     out.push(
-      '<path d="' +
+      '<path class="ln ln--act" d="' + area + '" fill="' + cActWash + '"/>',
+    );
+    out.push(
+      '<path class="ln ln--act" d="' +
         d +
         '" fill="none" stroke="' +
         cAct +
@@ -587,7 +601,7 @@ function renderChart() {
         " " +
         yA(tr.activeFraction[state.layer][i]).toFixed(1);
     out.push(
-      '<path d="' +
+      '<path class="ln ln--tr" d="' +
         d +
         '" fill="none" stroke="' +
         cAct +
@@ -609,7 +623,17 @@ function renderChart() {
       const xa = (x(i0) + x(Math.max(i0 - 1, 0))) / 2;
       const xb = i1 >= T - 1 ? padL + plotW : (x(i1) + x(i1 + 1)) / 2;
       const yy = yA(m);
-      line(xa, yy, xb, yy, cAct, 2, ' opacity="0.42"');
+      line(
+        xa,
+        yy,
+        xb,
+        yy,
+        cAct,
+        2,
+        ' opacity="0.42" class="plateau" style="--len:' +
+          Math.abs(xb - xa).toFixed(1) +
+          '"',
+      );
       if (xb - xa > 30) {
         out.push(
           '<text x="' +
@@ -618,7 +642,7 @@ function renderChart() {
             (yy - 6).toFixed(1) +
             '" fill="' +
             cInk2 +
-            '" font-size="10.5" font-weight="600" text-anchor="middle" ' +
+            '" font-size="' + T_VALUE + '" font-weight="600" text-anchor="middle" ' +
             'font-family="' +
             FONT_MONO +
             '" stroke="' +
@@ -662,7 +686,7 @@ function renderChart() {
         (yA(0) - 7).toFixed(1) +
         '" fill="' +
         cInk3 +
-        '" font-size="9.5" font-family="' +
+        '" font-size="' + T_LABEL + '" font-family="' +
         FONT_MONO +
         '" stroke="' +
         cSurface +
@@ -677,7 +701,7 @@ function renderChart() {
   for (const i of pickXTicks(T, plotW, isInstrument)) {
     const xx = x(i);
     line(xx, bTop + hB, xx, bTop + hB + 4, cAxis, 1);
-    text(xx, bTop + hB + 15, String(i), cInk3, 9.5, "middle");
+    text(xx, bTop + hB + 17, String(i), cInk3, T_TICK, "middle");
   }
   out.push(
     '<text x="' +
@@ -686,7 +710,7 @@ function renderChart() {
       (bTop + hB + 28) +
       '" fill="' +
       cInk3 +
-      '" font-size="9.5" text-anchor="end" font-family="' +
+      '" font-size="' + T_LABEL + '" text-anchor="end" font-family="' +
       FONT_MONO +
       '" letter-spacing="0.06em">TOKEN INDEX &#8594;</text>',
   );
@@ -868,7 +892,7 @@ function buildTooltip(i, xx) {
     pct(act) + "  (" + count + "/" + N_TOTAL + ")",
     "active",
   );
-  row(cssVar("--s-ce"), ce == null ? "—" : bits(ce) + " bits", "model CE");
+  row(cssVar("--s-ce"), ce == null ? "·" : bits(ce) + " bits", "model CE");
   if (r.oracle)
     row(cssVar("--s-oracle"), bits(r.oracle[i]) + " bits", "oracle");
 
@@ -893,12 +917,25 @@ function buildTooltip(i, xx) {
 
 /* ======================== READOUT / MEANS / TABLE ===================== */
 
+/* Writing a measured value: if the number actually moved, retrigger a short
+ * highlight so a change caused by a control is visible even when the eye was
+ * somewhere else on the page. Nothing here recomputes anything. */
+function setValue(node, text) {
+  if (node.textContent === text) return;
+  node.textContent = text;
+  node.classList.remove("is-fresh");
+  void node.offsetWidth;
+  node.classList.add("is-fresh");
+}
+
 function updateReadout() {
   const r = state.result;
   el.roLayerTag.textContent = "layer " + state.layer;
 
   if (!r || r.pending) {
-    el.roMem.textContent = el.roRep.textContent = el.roRatio.textContent = "—";
+    setValue(el.roMem, "·");
+    setValue(el.roRep, "·");
+    setValue(el.roRatio, "·");
     return;
   }
 
@@ -913,7 +950,7 @@ function updateReadout() {
     }
     el.roMem.parentElement.querySelector(".readout__label").textContent =
       "Mean active";
-    el.roMem.textContent = n ? pct(sum / n) : "—";
+    setValue(el.roMem, n ? pct(sum / n) : "·");
     el.roRep.parentElement.hidden = true;
     el.roRatio.parentElement.hidden = true;
     document.querySelector(".readout__arrow").hidden = true;
@@ -928,12 +965,14 @@ function updateReadout() {
 
   const mem = phaseMean(act, r.repeats, "memorize");
   const rep = phaseMean(act, r.repeats, "repeat");
-  el.roMem.textContent = mem == null ? "—" : pct(mem);
-  el.roRep.textContent = rep == null ? "—" : pct(rep);
-  el.roRatio.textContent =
+  setValue(el.roMem, mem == null ? "·" : pct(mem));
+  setValue(el.roRep, rep == null ? "·" : pct(rep));
+  setValue(
+    el.roRatio,
     mem == null || rep == null || rep === 0
-      ? "—"
-      : (mem / rep).toFixed(2) + "×";
+      ? "·"
+      : (mem / rep).toFixed(2) + "×",
+  );
 }
 
 function updatePhaseMeans() {
@@ -970,7 +1009,7 @@ function updatePhaseMeans() {
       sum += act[i];
       n++;
     }
-    pill("mean active", n ? pct(sum / n) : "—", "tokens 1–" + (r.T - 1));
+    pill("mean active", n ? pct(sum / n) : "·", "tokens 1–" + (r.T - 1));
     pill("compute", r.ms.toFixed(0) + " ms", "T = " + r.T);
     return;
   }
@@ -980,17 +1019,17 @@ function updatePhaseMeans() {
   const rep = phaseMean(act, r.repeats, "repeat");
   pill(
     "warm-up",
-    warm == null ? "—" : pct(warm),
+    warm == null ? "·" : pct(warm),
     "tokens 1–" + (WARMUP_LEN - 1),
   );
   pill(
     "memorize",
-    mem == null ? "—" : pct(mem),
+    mem == null ? "·" : pct(mem),
     "tokens " + WARMUP_LEN + "–" + (WARMUP_LEN + WORD_LEN - 1),
   );
   pill(
     "repeat",
-    rep == null ? "—" : pct(rep),
+    rep == null ? "·" : pct(rep),
     r.repeats > 1
       ? "tokens " + (WARMUP_LEN + WORD_LEN) + "–" + (r.T - 1)
       : "none at 1 repeat",
@@ -1016,12 +1055,12 @@ function updateTable() {
     const cells = [
       String(i),
       letterOf(r.tokens[i]),
-      r.mode === "instrument" ? phaseAt(i, r.repeats) : "—",
+      r.mode === "instrument" ? phaseAt(i, r.repeats) : "·",
       pct(act[i]),
       String(counts[i]),
-      control ? String(control.activeCounts[state.layer][i]) : "—",
-      r.ceAtTarget[i] == null ? "—" : bits(r.ceAtTarget[i]),
-      r.oracle ? bits(r.oracle[i]) : "—",
+      control ? String(control.activeCounts[state.layer][i]) : "·",
+      r.ceAtTarget[i] == null ? "·" : bits(r.ceAtTarget[i]),
+      r.oracle ? bits(r.oracle[i]) : "·",
     ];
     for (const c of cells) {
       const td = document.createElement("td");
@@ -1070,6 +1109,12 @@ function refresh() {
     state.result = r;
     el.readout.classList.remove("is-stale");
     renderChart();
+    /* a measurement just landed: replay the entry animation so the new
+     * curves read as a new result rather than a silent substitution. This
+     * animates an already computed array and runs no inference. */
+    el.svg.classList.remove("is-fresh");
+    void el.svg.getBoundingClientRect().width;
+    el.svg.classList.add("is-fresh");
     updateReadout();
     updatePhaseMeans();
     updateTable();
@@ -1175,7 +1220,7 @@ function writeNotes(sandbox) {
   el.noteTok0.textContent = "";
   el.noteTok0.append(
     b("BDH token 0 reads exactly 0.0%"),
-    t(" in every layer — attention is "),
+    t(" in every layer, because attention is "),
     c("tril(diagonal=-1)"),
     t(
       ", so token 0 attends to nothing. That is a property of the code, not a measurement, and it is ",
@@ -1217,7 +1262,7 @@ function setMode(mode) {
   document.getElementById("ctrlRepeats").hidden = sandbox;
   document.getElementById("ctrlWord").hidden = sandbox;
   el.figureSub.textContent = sandbox
-    ? "Your own letters. No oracle curve is drawn — off-distribution text has no generating process to be surprised by."
+    ? "Your own letters. No oracle curve is drawn, because off-distribution text has no generating process to be surprised by."
     : "One cycle of the Section 6.4 protocol, token by token.";
   /* the oracle legend entry is meaningless off-distribution */
   el.legend.children[0].classList.toggle("is-dim", sandbox);
@@ -1229,6 +1274,10 @@ function setMode(mode) {
 }
 
 function showStatus(msg, isError) {
+  const skeleton = $("chartSkeleton");
+  /* the skeleton stands in for the chart while weights load; an error
+   * replaces it with the message and a retry, so it must not stay up */
+  if (skeleton) skeleton.classList.toggle("is-on", !isError);
   el.status.hidden = false;
   el.status.classList.toggle("is-error", !!isError);
   el.statusText.textContent = msg;
@@ -1247,6 +1296,8 @@ function showStatus(msg, isError) {
 }
 
 function hideStatus() {
+  const skeleton = $("chartSkeleton");
+  if (skeleton) skeleton.classList.remove("is-on");
   el.status.hidden = true;
   const retry = $("retryWeights");
   if (retry) retry.remove();
@@ -1255,7 +1306,7 @@ function hideStatus() {
 function loadErrorText(e) {
   const local = location.protocol === "file:";
   return local
-    ? "The weight files cannot be read from a file:// URL. Serve the folder over HTTP — for example: python -m http.server 8000 — then open http://localhost:8000."
+    ? "The weight files cannot be read from a file:// URL. Serve the folder over HTTP, for example python -m http.server 8000, then open http://localhost:8000."
     : "Could not load the weight files (" +
         e.message +
         "). Check that weights_trained.json sits beside index.html.";
@@ -1319,7 +1370,7 @@ function wireControls() {
         (WORD_LEN - clean.length) +
         " more letter" +
         (WORD_LEN - clean.length === 1 ? "" : "s") +
-        " — showing “" +
+        ". Showing “" +
         state.word +
         "”";
     }
@@ -1459,6 +1510,85 @@ function wireScrollCondense() {
   window.addEventListener("scroll", onScroll, { passive: true });
 }
 
+/* ---------------------------------------------------------- chart zoom */
+/* Zoom and full screen change how much of the figure a reader can see. They
+ * change no value: the same computed arrays are drawn either way. */
+const CHART_ZOOM_MIN = 1;
+const CHART_ZOOM_MAX = 4;
+
+function setChartZoom(next) {
+  const clamped = Math.min(
+    CHART_ZOOM_MAX,
+    Math.max(CHART_ZOOM_MIN, Math.round(next * 4) / 4),
+  );
+  if (clamped === state.chartZoom) return;
+  state.chartZoom = clamped;
+  updateChartZoomUi();
+  if (state.result) renderChart();
+}
+
+function updateChartZoomUi() {
+  const level = $("chartZoomLevel");
+  const zoomed = state.chartZoom > 1;
+  if (level) level.textContent = Math.round(state.chartZoom * 100) + "%";
+  const reset = $("chartZoomReset");
+  if (reset) reset.hidden = !zoomed;
+  const out = $("chartZoomOut");
+  if (out) out.disabled = state.chartZoom <= CHART_ZOOM_MIN;
+  const zoomIn = $("chartZoomIn");
+  if (zoomIn) zoomIn.disabled = state.chartZoom >= CHART_ZOOM_MAX;
+  el.chartWrap.classList.toggle("is-zoomed", zoomed);
+}
+
+function wireChartZoom() {
+  const zoomIn = $("chartZoomIn");
+  const zoomOut = $("chartZoomOut");
+  const reset = $("chartZoomReset");
+  const expand = $("chartExpand");
+  const panel = $("chartPanel");
+
+  if (zoomIn)
+    zoomIn.addEventListener("click", () => setChartZoom(state.chartZoom + 0.5));
+  if (zoomOut)
+    zoomOut.addEventListener("click", () =>
+      setChartZoom(state.chartZoom - 0.5),
+    );
+  if (reset) reset.addEventListener("click", () => setChartZoom(1));
+
+  /* Ctrl or Cmd with the wheel is the browser-wide gesture for zoom, so it
+   * is the one that belongs here. A plain wheel keeps scrolling the page. */
+  el.chartWrap.addEventListener(
+    "wheel",
+    (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      setChartZoom(state.chartZoom + (event.deltaY < 0 ? 0.25 : -0.25));
+    },
+    { passive: false },
+  );
+
+  if (expand && panel) {
+    expand.addEventListener("click", () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (panel.requestFullscreen)
+        panel.requestFullscreen().catch(() => {
+          /* a browser may refuse: the inline figure stays usable */
+        });
+    });
+    document.addEventListener("fullscreenchange", () => {
+      const on = document.fullscreenElement === panel;
+      expand.textContent = on ? "Exit full screen" : "Full screen";
+      panel.classList.toggle("is-fullscreen", on);
+      if (state.result) {
+        renderChart();
+        renderInspector();
+      }
+    });
+  }
+
+  updateChartZoomUi();
+}
+
 function wireResize() {
   let t = 0;
   const ro = new ResizeObserver(() => {
@@ -1534,6 +1664,7 @@ async function boot() {
   };
   renderChart();
   wireResize();
+  wireChartZoom();
 
   const bootSelectionVersion = weightSelectionVersion;
   try {
@@ -1573,9 +1704,9 @@ function renderInspector() {
   const ready = !!(r && !r.pending && r.xySparse);
   $("tokenSlider").disabled = $("playTokens").disabled = !ready;
   if (!ready) {
-    $("neuronCount").textContent = "—";
-    $("tokenOut").textContent = "—";
-    $("tokenLetter").textContent = "—";
+    $("neuronCount").textContent = "·";
+    $("tokenOut").textContent = "·";
+    $("tokenLetter").textContent = "·";
     $("tokenStrip").textContent = "";
     delete $("tokenStrip").dataset.sequence;
     $("transformerGrid").setAttribute(
@@ -1760,7 +1891,7 @@ function updateGuideCopy() {
           pct(mem) +
           " active while memorizing, " +
           pct(rep) +
-          " on repeats — a " +
+          " on repeats, a " +
           ratio +
           " ratio. The weights and sparsity settings did not change.";
   if (guideStep === 2)
@@ -1839,7 +1970,7 @@ function wireGuide() {
       $("guideTitle").textContent = "Now remove the learning.";
       $("guideIndex").textContent = "03 / 03";
       guidePreset(2, "untrained", 8);
-      $("guideNext").textContent = "Explore freely";
+      $("guideNext").textContent = "Skip the guide";
     }
   });
 }

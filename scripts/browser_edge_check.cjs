@@ -4,16 +4,24 @@ const fs = require("fs"),
   assert = require("assert");
 const {
   chromium,
-} = require("/private/tmp/dataforge-tools/node_modules/playwright");
+} = require(
+  process.env.PLAYWRIGHT_MODULE ||
+    "/private/tmp/dataforge-tools/node_modules/playwright",
+);
+/* the sibling checks already take these overrides; this one hardcoded a
+ * macOS install, which made it unrunnable anywhere else */
+const TEST_URL = process.env.TEST_URL || "http://127.0.0.1:8000/";
 (async () => {
-  const browser = await chromium.launch({
-    executablePath:
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-    headless: true,
-  });
+  const launch = { headless: true };
+  if (process.env.CHROME_PATH)
+    launch.executablePath = process.env.CHROME_PATH;
+  else
+    launch.executablePath =
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  const browser = await chromium.launch(launch);
   const results = {
     runtime: "Headless Google Chrome via Playwright",
-    url: "http://127.0.0.1:8000/",
+    url: TEST_URL,
     checks: [],
     errors: [],
   };

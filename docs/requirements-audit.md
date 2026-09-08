@@ -1,4 +1,4 @@
-# Supplied requirements image — evidence audit
+# Supplied requirements image: evidence audit
 
 Audited 2026-09-08 against the requirements transcribed from the user's supplied JPEG by the lead agent. The image remains user reference material, untouched and excluded from release assets. The completed memory expansion is published at source commit 67e4736b5ffc1e676d124868e78caa9ae349ab00; public-preview-check.json verifies its anonymous artifact access and public-pdf-verification.json checks both PDF hashes.
 

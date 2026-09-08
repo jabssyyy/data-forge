@@ -23,7 +23,7 @@
 }
 .memory-graph__eyebrow,
 .memory-graph__step {
-  font: 500 10px/1.5 var(--mono);
+  font: 500 13px/1.5 var(--mono);
   letter-spacing: 0.08em;
   color: var(--ink-2);
 }
@@ -38,8 +38,54 @@
   min-height: 240px;
   overflow: visible;
 }
+.memory-graph__zoom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0 2px;
+}
+.memory-graph__zoom-btn {
+  font: 500 16.5px var(--sans);
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 6px 12px;
+}
+.memory-graph__zoom-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.memory-graph__zoom-level {
+  font: 500 16.5px var(--mono);
+  color: var(--ink);
+  min-width: 9ch;
+  text-align: center;
+}
+.memory-graph__canvas:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.memory-graph__canvas.is-zoomed {
+  cursor: grab;
+  /* Once zoomed, a single-finger drag pans the view instead of scrolling
+     the page or triggering the narrow-screen horizontal scroll fallback
+     below; at 100% zoom touch-action is left alone so that fallback still
+     works untouched. */
+  touch-action: none;
+  /* The svg keeps overflow: visible for its normal small edge bleed, but
+     at higher zoom that bleed is magnified by the same factor and can
+     reach outside the canvas box (over the zoom toolbar above it). Clip
+     to the viewport once zoomed, where clipping is also the correct
+     behaviour for a viewport. */
+  overflow: hidden;
+}
+.memory-graph__canvas.is-zoomed.is-dragging {
+  cursor: grabbing;
+}
 .memory-graph__column {
-  font: 500 11px var(--mono);
+  font: 500 13px var(--mono);
   fill: var(--ink-2);
   letter-spacing: 0.035em;
 }
@@ -47,7 +93,7 @@
   cursor: pointer;
 }
 .memory-graph__node text {
-  font: 500 12px var(--mono);
+  font: 500 14px var(--mono);
   fill: var(--ink);
 }
 .memory-graph__node-halo {
@@ -83,7 +129,7 @@
   flex-wrap: wrap;
   gap: 10px 20px;
   justify-content: center;
-  font: 11px/1.5 var(--mono);
+  font: 13px/1.5 var(--mono);
   color: var(--ink-2);
 }
 .memory-graph__legend span {
@@ -104,7 +150,7 @@
   max-width: 570px;
   text-align: center;
   margin: 15px auto 0;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--ink-2);
 }
@@ -114,20 +160,20 @@
   border-left: 1px solid var(--rule);
 }
 .memory-graph__inspector h3 {
-  font-size: 23px;
+  font-size: 27px;
   line-height: 1.2;
   letter-spacing: -0.035em;
   margin: 20px 0;
   overflow-wrap: anywhere;
 }
 .memory-graph__detail p {
-  font-size: 13px;
+  font-size: 15.5px;
   line-height: 1.65;
   color: var(--ink-2);
   margin: 0 0 15px;
 }
 .memory-graph__detail .memory-graph__big-value {
-  font: 500 35px/1.2 var(--mono);
+  font: 500 41.5px/1.2 var(--mono);
   color: var(--ink);
   letter-spacing: -0.06em;
 }
@@ -136,7 +182,7 @@
   color: var(--accent-ink);
 }
 .memory-graph__detail .memory-graph__small {
-  font-size: 11px;
+  font-size: 13px;
 }
 .memory-graph__spark {
   width: 100%;
@@ -147,7 +193,7 @@
   grid-column: 1/-1;
   border-top: 1px solid var(--rule);
   padding: 14px 22px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-2);
 }
 .memory-graph__table-wrap summary {
@@ -161,7 +207,7 @@
 .memory-graph table {
   width: 100%;
   border-collapse: collapse;
-  font: 11px/1.5 var(--mono);
+  font: 13px/1.5 var(--mono);
 }
 .memory-graph caption {
   text-align: left;
@@ -221,7 +267,7 @@
   }
   .memory-graph__legend {
     justify-content: flex-start;
-    font-size: 10px;
+    font-size: 13px;
     gap: 9px 12px;
   }
   .memory-graph__caption {
@@ -232,7 +278,7 @@
     display: block;
     position: sticky;
     left: 0;
-    font: 10px/1.5 var(--mono);
+    font: 13px/1.5 var(--mono);
     color: var(--ink-2);
     padding: 4px 0 12px;
   }
@@ -266,11 +312,11 @@
     display: none;
   }
   .memory-graph__column {
-    font-size: 8px;
+    font-size: 13px;
     letter-spacing: 0;
   }
   .memory-graph__node text {
-    font-size: 10px;
+    font-size: 13px;
   }
 }
 .memory-graph__edge:focus-visible {

@@ -1,0 +1,761 @@
+/* =====================================================================
+   ui.css - page furniture.
+
+   Components added around the instrument: navigation menu, scroll
+   indicator, chart zoom, toasts, privacy note, back-to-top, keyboard
+   shortcut sheet, question accordion, skeleton and empty states.
+
+   Colour comes from the tokens in style.css so both themes stay in one
+   place. Every animation is switched off under prefers-reduced-motion at
+   the end of this file.
+   ===================================================================== */
+
+/* Visually hidden, still announced. Used for the note that tells a screen
+   reader a link opens in a new tab. */
+.vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------- scroll bars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-2) transparent;
+}
+*::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--rule-2);
+  border: 3px solid var(--plane);
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-3);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ------------------------------------------------- reading indicator */
+.scrollprogress {
+  height: 2px;
+  background: transparent;
+  overflow: hidden;
+}
+.scrollprogress i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 90ms linear;
+}
+
+/* ----------------------------------------------------- nav additions */
+.tabs__modes {
+  display: flex;
+  align-items: stretch;
+}
+
+.tabs__util {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.navlink {
+  font: 500 15px/1 var(--sans);
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 7px 9px;
+  border-radius: 2px;
+  white-space: nowrap;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+.navlink:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.navlink:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.iconbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 15px/1 var(--sans);
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 6px 9px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+.iconbtn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.iconbtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+kbd {
+  font: 500 13px/1 var(--mono);
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--rule-2);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  padding: 3px 5px;
+  white-space: nowrap;
+}
+
+.navmenu-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font: 500 15px/1 var(--sans);
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 8px 6px;
+  cursor: pointer;
+}
+.navmenu-btn__bars,
+.navmenu-btn__bars::before,
+.navmenu-btn__bars::after {
+  display: block;
+  width: 15px;
+  height: 1.5px;
+  background: currentColor;
+  content: "";
+  transition: transform 160ms ease;
+}
+.navmenu-btn__bars {
+  position: relative;
+}
+.navmenu-btn__bars::before {
+  position: absolute;
+  top: -5px;
+}
+.navmenu-btn__bars::after {
+  position: absolute;
+  top: 5px;
+}
+.navmenu-btn[aria-expanded="true"] .navmenu-btn__bars {
+  background: transparent;
+}
+.navmenu-btn[aria-expanded="true"] .navmenu-btn__bars::before {
+  transform: translateY(5px) rotate(45deg);
+}
+.navmenu-btn[aria-expanded="true"] .navmenu-btn__bars::after {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+/* ------------------------------------------------------------ toasts */
+.toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 340px;
+  padding: 11px 12px;
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
+  box-shadow: 0 10px 30px -18px rgba(0, 0, 0, 0.55);
+  animation: toastIn 200ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.toast--ok {
+  border-left-color: var(--s-oracle);
+}
+.toast--error {
+  border-left-color: var(--s-ce);
+}
+.toast.is-leaving {
+  animation: toastOut 200ms ease forwards;
+}
+.toast__text {
+  font: 400 15px/1.45 var(--sans);
+  color: var(--ink);
+}
+.toast__close {
+  font: 400 17.5px/1 var(--sans);
+  color: var(--ink-3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0 2px;
+  margin-left: auto;
+}
+.toast__close:hover {
+  color: var(--ink);
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes toastOut {
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------------------------------------------------- privacy notice */
+.privacy {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 55;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 14px 15px;
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-top: 3px solid var(--ink-3);
+  border-radius: 2px;
+  box-shadow: 0 14px 40px -22px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+.privacy.is-in {
+  opacity: 1;
+  transform: none;
+}
+.privacy p {
+  font: 400 14px/1.55 var(--sans);
+  color: var(--ink-2);
+  margin: 0;
+}
+.privacy b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.privacy .primary-btn {
+  align-self: flex-start;
+}
+
+/* -------------------------------------------------------- back to top */
+.totop {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 14px/1 var(--sans);
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  padding: 9px 12px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.totop.is-in {
+  opacity: 1;
+  transform: none;
+}
+.totop:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+.totop:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.totop__arrow {
+  width: 8px;
+  height: 8px;
+  border-left: 1.5px solid currentColor;
+  border-top: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(1px, 1px);
+}
+
+/* a toast and the top button share the corner: lift the button clear */
+.toasts:not(:empty) ~ .totop {
+  bottom: 76px;
+}
+
+/* --------------------------------------------------- shortcuts dialog */
+.shortcuts {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.shortcuts__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 12, 14, 0.42);
+}
+.shortcuts__panel {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: 82vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  padding: 20px 22px 22px;
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.7);
+  animation: dialogIn 180ms cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+.shortcuts__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.shortcuts__head h2 {
+  font: 500 25px/1.2 var(--display);
+  color: var(--ink);
+  margin: 0;
+}
+.shortcuts__close {
+  font: 500 14px/1 var(--sans);
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid var(--rule-2);
+  border-radius: 2px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.shortcuts__close:hover {
+  color: var(--ink);
+  border-color: var(--ink-3);
+}
+.shortcuts__note {
+  font: 400 14px/1.5 var(--sans);
+  color: var(--ink-3);
+  margin: 8px 0 16px;
+}
+.shortcuts__list {
+  margin: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.shortcuts__list > div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: var(--surface);
+  padding: 9px 11px;
+}
+.shortcuts__list dt {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.shortcuts__list dd {
+  margin: 0;
+  font: 400 15px/1.4 var(--sans);
+  color: var(--ink-2);
+}
+
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+/* ------------------------------------------------------ question list */
+.faq {
+  padding: 0 4px 34px;
+}
+.faq__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+.faq__head h2 {
+  font: 500 clamp(25px, 3vw, 32px) / 1.2 var(--display);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.faq__list {
+  border-top: 1px solid var(--rule);
+}
+.faq__item {
+  border-bottom: 1px solid var(--rule);
+}
+.faq__item summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  list-style: none;
+  cursor: pointer;
+  padding: 15px 2px;
+  font: 500 17.5px/1.4 var(--sans);
+  color: var(--ink);
+  transition: color 120ms ease;
+}
+.faq__item summary::-webkit-details-marker {
+  display: none;
+}
+.faq__item summary::before {
+  content: "+";
+  font: 400 17.5px/1 var(--mono);
+  color: var(--accent);
+  flex: none;
+  width: 14px;
+  transition: transform 180ms ease;
+}
+.faq__item[open] summary::before {
+  content: "\2212"; /* minus */
+}
+.faq__item summary:hover {
+  color: var(--accent-ink);
+}
+.faq__item summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.faq__body {
+  padding: 0 2px 17px 26px;
+  animation: faqIn 200ms ease;
+}
+.faq__body p {
+  font: 400 16.5px/1.65 var(--sans);
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 68ch;
+}
+.faq__body code {
+  font: 400 15px/1 var(--mono);
+  background: var(--surface-2);
+  border-radius: 2px;
+  padding: 2px 4px;
+}
+
+@keyframes faqIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/* -------------------------------------------------- skeleton + empties */
+.skeleton {
+  display: none;
+  padding: 6px 0 2px;
+}
+.skeleton.is-on {
+  display: block;
+}
+.skeleton__axis {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.skeleton__axis i {
+  display: block;
+  height: 7px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--surface-2);
+}
+.skeleton__curve {
+  height: 150px;
+  border-radius: 2px;
+  background: linear-gradient(
+    100deg,
+    var(--surface-2) 30%,
+    var(--surface-3) 45%,
+    var(--surface-2) 60%
+  );
+  background-size: 280% 100%;
+  animation: shimmer 1500ms ease-in-out infinite;
+  margin-bottom: 22px;
+}
+.skeleton__curve--short {
+  height: 96px;
+  margin-bottom: 0;
+}
+.skeleton__axis--short i:nth-child(2) {
+  flex: 2;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
+.emptystate {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 96px;
+  padding: 16px;
+  border: 1px dashed var(--rule-2);
+  border-radius: 2px;
+  background: var(--surface-2);
+}
+.emptystate b {
+  font: 600 15.5px/1.3 var(--sans);
+  color: var(--ink-2);
+}
+.emptystate span {
+  font: 400 14px/1.5 var(--sans);
+  color: var(--ink-3);
+  max-width: 46ch;
+}
+
+/* ------------------------------------------------------------ mobile */
+@media (max-width: 860px) {
+  .navmenu-btn {
+    display: inline-flex;
+  }
+  .tabs__util {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 30;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 6px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--rule-2);
+    box-shadow: 0 16px 30px -24px rgba(0, 0, 0, 0.6);
+    display: none;
+  }
+  .tabs__util.is-open {
+    display: flex;
+  }
+  .navlink,
+  .iconbtn {
+    padding: 11px 10px;
+    font-size: 16.5px;
+  }
+  .tabs {
+    position: relative;
+  }
+  .toasts,
+  .privacy {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+  }
+  .toast {
+    max-width: none;
+  }
+  .totop {
+    right: 12px;
+    bottom: 12px;
+  }
+  .shortcuts__list > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}
+
+/* --------------------------------------------------------- less motion */
+@media (prefers-reduced-motion: reduce) {
+  .scrollprogress i,
+  .toast,
+  .toast.is-leaving,
+  .privacy,
+  .totop,
+  .shortcuts__panel,
+  .faq__body,
+  .skeleton__curve,
+  .navmenu-btn__bars,
+  .navmenu-btn__bars::before,
+  .navmenu-btn__bars::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .skeleton__curve {
+    background: var(--surface-2);
+  }
+}
+
+/* ------------------------------------------------ memory lab: no graph */
+/* Until the model has produced a state there is nothing to draw. Rather
+   than leaving a blank strip, the status line itself becomes the empty
+   state. Pure CSS, so it stays in step with the hidden attribute that
+   memory-lab.js already manages. */
+#memoryGraph[hidden] ~ .memory-lab__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 84px;
+  padding: 16px 18px;
+  border: 1px dashed var(--rule-2);
+  border-radius: 2px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+#memoryGraph[hidden] ~ .memory-lab__status::before {
+  content: "";
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--rule-2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #memoryGraph[hidden] ~ .memory-lab__status::before {
+    animation: none;
+    border-top-color: var(--rule-2);
+  }
+}
+
+/* ------------------------------------------------------- chart tools */
+.chart-tools {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 0 0 12px;
+}
+.chart-tools__label {
+  font: 500 15px/1 var(--sans);
+  color: var(--ink-2);
+}
+
+.zoomer {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--rule-2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.zoomer button {
+  appearance: none;
+  border: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font: 500 18px/1 var(--sans);
+  min-width: 40px;
+  min-height: 38px;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.zoomer button:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.zoomer button:disabled {
+  color: var(--ink-3);
+  cursor: default;
+}
+.zoomer button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.zoomer output {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 66px;
+  font: 500 15px/1 var(--mono);
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border-left: 1px solid var(--rule-2);
+  border-right: 1px solid var(--rule-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the figure scrolls sideways once the token axis is stretched */
+.chart.is-zoomed {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+.chart.is-zoomed #chartSvg {
+  display: block;
+}
+
+.panel--chart.is-fullscreen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--surface);
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+.panel--chart.is-fullscreen .chart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 560px) {
+  .chart-tools {
+    gap: 10px;
+  }
+  .zoomer button {
+    min-width: 46px;
+    min-height: 44px;
+  }
+}

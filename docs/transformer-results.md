@@ -1,6 +1,6 @@
 # Offline Transformer results
 
-PRECOMPUTED — canonical 77-token preset only. This is one synthetic experiment, not an architecture ranking or a causal isolation of multiplicative gating.
+PRECOMPUTED. Canonical 77-token preset only. This is one synthetic experiment, not an architecture ranking or a causal isolation of multiplicative gating.
 
 The predeclared predictive-comparability gate passed on the sole seed-0, 2,200-step run. No extension, retry or tuning was performed. [Protocol](transformer-protocol.md) records the choices before training.
 

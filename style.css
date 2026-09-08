@@ -5,62 +5,68 @@
    Identity: a laboratory instrument panel. Recessed wells for controls,
    hairline rules, monospace for every measured number, one accent hue.
 
-   Colour: series hues come from the validated dataviz palette and were
-   re-run against THIS page's surfaces (#fbfcfd light, #161c21 dark) in
-   both modes. Light-mode aqua sits at 2.74:1 against the surface, which
-   obligates relief - discharged by the always-present legend, the direct
-   end-labels on every curve, and the data table.
+   Colour: every ink and series hue is measured against this page's own
+   surfaces (#fcfbf8 light, #181b20 dark). Text inks clear 4.5:1 and series
+   hues clear 3:1 as graphical objects in both modes; the legend, the direct
+   end-labels on every curve and the data table remain as further relief, so
+   colour is never the only channel carrying a value.
    ===================================================================== */
 
 /* ------------------------------------------------------- tokens: light */
 :root {
   color-scheme: light;
 
-  --plane: #f4f6f8;
-  --surface: #fbfcfd;
-  --surface-2: #eef2f6;
-  --surface-3: #e6ebf0;
+  --plane: #f2f0ec;
+  --surface: #fcfbf8;
+  --surface-2: #eeece7;
+  --surface-3: #e5e1da;
 
-  --ink: #0e1418;
-  --ink-2: #4a5560;
-  --ink-3: #78848f;
+  --ink: #14120e;
+  --ink-2: #56514a;
+  --ink-3: #726c63;
 
-  --rule: #e2e7ec;
-  --rule-2: #ccd5dd;
+  --rule: #e3dfd8;
+  --rule-2: #cdc7bc;
 
-  --accent: #2a78d6;
+  --accent: #2470cc;
   --accent-ink: #1c5cab;
-  --accent-wash: rgba(42, 120, 214, 0.1);
+  --accent-wash: rgba(36, 112, 204, 0.1);
 
   --s-act: #2a78d6; /* slot 1  - active neuron fraction (the claim) */
-  --s-ce: #eb6834; /* slot 2  - model cross-entropy              */
-  --s-oracle: #1baf7a; /* slot 3  - oracle surprisal (truth)         */
-  --s-oracle-wash: rgba(27, 175, 122, 0.13);
-  --s-act-wash: rgba(42, 120, 214, 0.1);
+  --s-ce: #d15325; /* slot 2  - model cross-entropy              */
+  --s-oracle: #149468; /* slot 3  - oracle surprisal (truth)         */
+  --s-oracle-wash: rgba(20, 148, 104, 0.13);
+  --s-act-wash: rgba(36, 112, 204, 0.1);
 
   --warn-bg: #fdf4e0;
   --warn-ink: #7a5310;
   --warn-rule: #ecd9ac;
 
-  --band-warm: rgba(14, 20, 24, 0.03);
-  --band-mem: rgba(14, 20, 24, 0.065);
-  --band-rep: rgba(14, 20, 24, 0);
+  --band-warm: rgba(20, 18, 14, 0.03);
+  --band-mem: rgba(20, 18, 14, 0.065);
+  --band-rep: rgba(20, 18, 14, 0);
 
-  --grid: #e6ebf0;
-  --axis: #ccd5dd;
+  --grid: #e5e1da;
+  --axis: #cdc7bc;
 
   --shadow-bar:
-    0 1px 0 rgba(14, 20, 24, 0.06), 0 6px 20px -14px rgba(14, 20, 24, 0.4);
+    0 1px 0 rgba(20, 18, 14, 0.06), 0 6px 20px -14px rgba(20, 18, 14, 0.4);
 
+  /* Atkinson Hyperlegible was drawn by the Braille Institute for maximum
+     letter distinction at reading sizes, which is the right brief for an
+     instrument people are asked to read numbers off. Literata was drawn for
+     long-form screen reading. Both are unusual choices on the web, which is
+     the point: neither is the default a page falls into. */
   --sans:
-    "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, sans-serif;
+    "Atkinson Hyperlegible Next", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --display: "Literata", ui-serif, Georgia, "Iowan Old Style", serif;
   --mono:
-    "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    monospace;
+    "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
 
   --wrap: 1140px;
-  --r: 6px;
+  --r: 3px;
 }
 
 /* -------------------------------------------------------- tokens: dark */
@@ -68,38 +74,38 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --plane: #0c1013;
-    --surface: #161c21;
-    --surface-2: #1d252c;
-    --surface-3: #253039;
+    --plane: #131519;
+    --surface: #181b20;
+    --surface-2: #1e2229;
+    --surface-3: #262b33;
 
-    --ink: #f2f5f7;
-    --ink-2: #b3bec8;
-    --ink-3: #7f8b96;
+    --ink: #e3e6ea;
+    --ink-2: #a7aeb8;
+    --ink-3: #7b838e;
 
-    --rule: #242d34;
-    --rule-2: #33404a;
+    --rule: #232830;
+    --rule-2: #323841;
 
-    --accent: #3987e5;
-    --accent-ink: #86b6ef;
-    --accent-wash: rgba(57, 135, 229, 0.16);
+    --accent: #6ba6ec;
+    --accent-ink: #9cc5f4;
+    --accent-wash: rgba(107, 166, 236, 0.13);
 
-    --s-act: #3987e5;
-    --s-ce: #d95926;
-    --s-oracle: #199e70;
-    --s-oracle-wash: rgba(25, 158, 112, 0.18);
-    --s-act-wash: rgba(57, 135, 229, 0.15);
+    --s-act: #6ba6ec;
+    --s-ce: #e2814f;
+    --s-oracle: #45bb8e;
+    --s-oracle-wash: rgba(69, 187, 142, 0.14);
+    --s-act-wash: rgba(107, 166, 236, 0.12);
 
-    --warn-bg: #2b2211;
-    --warn-ink: #e8bd63;
-    --warn-rule: #4a3c1c;
+    --warn-bg: #2a2314;
+    --warn-ink: #e5c07b;
+    --warn-rule: #463b22;
 
-    --band-warm: rgba(255, 255, 255, 0.03);
-    --band-mem: rgba(255, 255, 255, 0.062);
+    --band-warm: rgba(255, 255, 255, 0.025);
+    --band-mem: rgba(255, 255, 255, 0.05);
     --band-rep: rgba(255, 255, 255, 0);
 
-    --grid: #232c33;
-    --axis: #33404a;
+    --grid: #232830;
+    --axis: #323841;
 
     --shadow-bar:
       0 1px 0 rgba(0, 0, 0, 0.5), 0 8px 24px -16px rgba(0, 0, 0, 0.9);
@@ -109,38 +115,38 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --plane: #0c1013;
-  --surface: #161c21;
-  --surface-2: #1d252c;
-  --surface-3: #253039;
+  --plane: #131519;
+  --surface: #181b20;
+  --surface-2: #1e2229;
+  --surface-3: #262b33;
 
-  --ink: #f2f5f7;
-  --ink-2: #b3bec8;
-  --ink-3: #7f8b96;
+  --ink: #e3e6ea;
+  --ink-2: #a7aeb8;
+  --ink-3: #7b838e;
 
-  --rule: #242d34;
-  --rule-2: #33404a;
+  --rule: #232830;
+  --rule-2: #323841;
 
-  --accent: #3987e5;
-  --accent-ink: #86b6ef;
-  --accent-wash: rgba(57, 135, 229, 0.16);
+  --accent: #6ba6ec;
+  --accent-ink: #9cc5f4;
+  --accent-wash: rgba(107, 166, 236, 0.13);
 
-  --s-act: #3987e5;
-  --s-ce: #d95926;
-  --s-oracle: #199e70;
-  --s-oracle-wash: rgba(25, 158, 112, 0.18);
-  --s-act-wash: rgba(57, 135, 229, 0.15);
+  --s-act: #6ba6ec;
+  --s-ce: #e2814f;
+  --s-oracle: #45bb8e;
+  --s-oracle-wash: rgba(69, 187, 142, 0.14);
+  --s-act-wash: rgba(107, 166, 236, 0.12);
 
-  --warn-bg: #2b2211;
-  --warn-ink: #e8bd63;
-  --warn-rule: #4a3c1c;
+  --warn-bg: #2a2314;
+  --warn-ink: #e5c07b;
+  --warn-rule: #463b22;
 
-  --band-warm: rgba(255, 255, 255, 0.03);
-  --band-mem: rgba(255, 255, 255, 0.062);
+  --band-warm: rgba(255, 255, 255, 0.025);
+  --band-mem: rgba(255, 255, 255, 0.05);
   --band-rep: rgba(255, 255, 255, 0);
 
-  --grid: #232c33;
-  --axis: #33404a;
+  --grid: #232830;
+  --axis: #323841;
 
   --shadow-bar: 0 1px 0 rgba(0, 0, 0, 0.5), 0 8px 24px -16px rgba(0, 0, 0, 0.9);
 }
@@ -168,7 +174,7 @@ body {
   background: var(--plane);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 17.5px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -243,7 +249,7 @@ main {
   flex-wrap: wrap;
   gap: 6px 12px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -260,7 +266,7 @@ main {
 }
 
 .claim__text {
-  font-size: clamp(15px, 1.05vw + 11.5px, 21px);
+  font-size: clamp(17.5px, 1.05vw + 13.5px, 25px);
   font-weight: 500;
   line-height: 1.42;
   letter-spacing: -0.005em;
@@ -286,7 +292,7 @@ main {
   opacity: 0;
 }
 .claim.is-condensed .claim__text {
-  font-size: clamp(12.5px, 0.62vw + 10.6px, 15.5px);
+  font-size: clamp(15px, 0.62vw + 13px, 18.5px);
 }
 
 /* ====================================================== TAB STRIP ===== */
@@ -316,7 +322,7 @@ main {
   border: 0;
   background: none;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 15.5px;
   font-weight: 500;
   color: var(--ink-3);
   padding: 10px 14px;
@@ -346,7 +352,7 @@ main {
   align-items: center;
   gap: 6px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -395,7 +401,7 @@ main {
 }
 
 .panel__head h2 {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -404,7 +410,7 @@ main {
 .badge {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -458,7 +464,7 @@ main {
   border-radius: var(--r);
   padding: 12px 14px;
   color: var(--warn-ink);
-  font-size: 13.5px;
+  font-size: 16px;
   line-height: 1.5;
 }
 
@@ -480,13 +486,13 @@ main {
 }
 
 .figure__title {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .figure__sub {
-  font-size: 12.5px;
+  font-size: 15px;
   color: var(--ink-3);
   margin-top: 3px;
   max-width: 62ch;
@@ -512,7 +518,7 @@ main {
 
 .readout__label {
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -525,7 +531,7 @@ main {
 
 .readout__value {
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 17.5px;
   font-weight: 500;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
@@ -533,7 +539,7 @@ main {
 }
 
 .readout__value--hero {
-  font-size: 25px;
+  font-size: 29.5px;
   font-weight: 600;
   color: var(--accent-ink);
   font-variant-numeric: normal;
@@ -542,7 +548,7 @@ main {
 
 .readout__arrow {
   color: var(--ink-3);
-  font-size: 13px;
+  font-size: 15.5px;
   padding-bottom: 3px;
 }
 
@@ -597,7 +603,7 @@ main {
 }
 
 .legend__name {
-  font-size: 12.5px;
+  font-size: 15px;
   color: var(--ink-2);
   font-weight: 500;
 }
@@ -628,7 +634,7 @@ main {
   justify-content: center;
   gap: 10px;
   background: color-mix(in srgb, var(--surface) 84%, transparent);
-  font-size: 12.5px;
+  font-size: 15px;
   color: var(--ink-2);
   z-index: 3;
   border-radius: var(--r);
@@ -670,7 +676,7 @@ main {
   box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.45);
   padding: 8px 10px;
   min-width: 168px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .tooltip[hidden] {
@@ -688,20 +694,20 @@ main {
 
 .tip__tok {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--ink-3);
   letter-spacing: 0.06em;
 }
 .tip__letter {
   font-family: var(--mono);
-  font-size: 15px;
+  font-size: 17.5px;
   font-weight: 600;
   color: var(--ink);
 }
 .tip__phase {
   margin-left: auto;
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--ink-3);
@@ -727,7 +733,7 @@ main {
 }
 .tip__name {
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: 13px;
   margin-left: auto;
 }
 .tip__note {
@@ -735,7 +741,7 @@ main {
   padding-top: 5px;
   border-top: 1px solid var(--rule);
   color: var(--ink-3);
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -748,7 +754,7 @@ main {
 }
 
 .note {
-  font-size: 11.5px;
+  font-size: 13.5px;
   line-height: 1.5;
   color: var(--ink-3);
   padding-left: 11px;
@@ -789,7 +795,7 @@ main {
 
 .pm__name {
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -797,14 +803,14 @@ main {
 
 .pm__val {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: 15.5px;
   font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 .pm__n {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   color: var(--ink-3);
 }
 
@@ -814,7 +820,7 @@ main {
   border: 0;
   padding: 4px 2px;
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--accent-ink);
   cursor: pointer;
@@ -840,13 +846,13 @@ main {
 .datatable {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .datatable caption {
   text-align: left;
   padding: 10px 20px;
-  font-size: 11.5px;
+  font-size: 13.5px;
   color: var(--ink-3);
   background: var(--surface);
   position: sticky;
@@ -870,7 +876,7 @@ main {
   background: var(--surface-2);
   color: var(--ink-3);
   font-weight: 500;
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   z-index: 1;
@@ -926,7 +932,7 @@ main {
   flex-direction: column;
   gap: 1px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -935,7 +941,7 @@ main {
 
 .control__hint {
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
@@ -943,7 +949,7 @@ main {
 }
 
 .control__hint code {
-  font-size: 10.5px;
+  font-size: 13px;
   padding: 0 3px;
   background: none;
   border: 0;
@@ -952,7 +958,7 @@ main {
 
 .control__meta {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
   min-height: 15px;
@@ -980,7 +986,7 @@ main {
   border-radius: 4px;
   padding: 6px 4px;
   font-family: var(--mono);
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--ink-2);
   cursor: pointer;
@@ -992,7 +998,7 @@ main {
 
 .segmented--wide button {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .segmented button:hover {
@@ -1016,7 +1022,7 @@ main {
 
 .slider__out {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 16.5px;
   font-weight: 600;
   color: var(--ink);
   min-width: 15px;
@@ -1071,7 +1077,7 @@ input[type="range"]::-moz-range-thumb {
 /* text inputs --------------------------------------------------------- */
 .control input[type="text"] {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 16.5px;
   letter-spacing: 0.09em;
   padding: 7px 10px;
   background: var(--surface);
@@ -1102,7 +1108,7 @@ input[type="range"]::-moz-range-thumb {
   border-radius: var(--r);
   padding: 18px 16px;
   font-family: var(--mono);
-  font-size: clamp(15px, 1.5vw + 9px, 21px);
+  font-size: clamp(17.5px, 1.5vw + 13px, 25px);
   color: var(--ink);
   line-height: 1.3;
   overflow-x: auto;
@@ -1163,7 +1169,7 @@ input[type="range"]::-moz-range-thumb {
   gap: clamp(12px, 8vw, 96px);
   margin-top: 7px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -1185,7 +1191,7 @@ input[type="range"]::-moz-range-thumb {
   counter-increment: mech;
   position: relative;
   padding-left: 30px;
-  font-size: 14px;
+  font-size: 16.5px;
   line-height: 1.62;
   color: var(--ink-2);
 }
@@ -1203,7 +1209,7 @@ input[type="range"]::-moz-range-thumb {
   background: var(--surface-2);
   border: 1px solid var(--rule-2);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink-3);
 }
@@ -1215,7 +1221,7 @@ input[type="range"]::-moz-range-thumb {
 
 .src {
   margin-top: 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-3);
   max-width: 76ch;
   line-height: 1.55;
@@ -1237,7 +1243,7 @@ input[type="range"]::-moz-range-thumb {
   counter-increment: hon;
   position: relative;
   padding-left: 30px;
-  font-size: 13.5px;
+  font-size: 16px;
   line-height: 1.62;
   color: var(--ink-2);
 }
@@ -1255,7 +1261,7 @@ input[type="range"]::-moz-range-thumb {
   background: var(--surface-2);
   border: 1px solid var(--rule-2);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink-3);
 }
@@ -1273,7 +1279,7 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--warn-rule);
   border-radius: 4px;
   color: var(--warn-ink);
-  font-size: 12.5px;
+  font-size: 15px;
   line-height: 1.55;
 }
 
@@ -1292,7 +1298,7 @@ input[type="range"]::-moz-range-thumb {
 
 .foot__col h3 {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -1312,7 +1318,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .keylist dd {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
   color: var(--ink-3);
 }
@@ -1331,18 +1337,18 @@ input[type="range"]::-moz-range-thumb {
   gap: 1px;
 }
 .foot__links a {
-  font-size: 12.5px;
+  font-size: 15px;
   font-weight: 500;
 }
 .foot__links span {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-3);
   font-family: var(--mono);
   line-height: 1.45;
 }
 
 .foot__note {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.55;
   color: var(--ink-3);
   margin-bottom: 9px;
@@ -1352,7 +1358,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .foot__stamp {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 13px;
 }
 
 /* ========================================================= MOBILE ===== */
@@ -1373,7 +1379,7 @@ input[type="range"]::-moz-range-thumb {
 
 @media (max-width: 560px) {
   body {
-    font-size: 14.5px;
+    font-size: 17px;
   }
   main {
     padding: 14px 12px 0;
@@ -1427,14 +1433,14 @@ input[type="range"]::-moz-range-thumb {
     padding: 9px 14px;
   }
   .readout__value--hero {
-    font-size: 22px;
+    font-size: 26px;
   }
   .eq {
     padding: 15px 10px;
   }
   .eq__gloss {
     gap: 10px;
-    font-size: 9px;
+    font-size: 13px;
   }
   .foot {
     padding: 18px 12px 28px;
@@ -1462,57 +1468,59 @@ input[type="range"]::-moz-range-thumb {
   }
 }
 
-/* Editorial instrument: restrained paper, ink and three measured series. */
+/* Editorial instrument: restrained paper, ink and three measured series.
+   This block is the effective light palette: it is declared after the one at
+   the top of the file and therefore wins. Keep the two in step. */
 :root {
-  --plane: #f3f2ed;
-  --surface: #fdfcf8;
-  --surface-2: #eeeee8;
-  --surface-3: #e3e5df;
-  --ink: #172323;
-  --ink-2: #465451;
-  --ink-3: #626e68;
-  --rule: #dce0d7;
-  --rule-2: #bdc7bd;
-  --accent: #236ba6;
-  --accent-ink: #205e91;
-  --s-act: #236ba6;
-  --s-ce: #b44e26;
-  --s-oracle: #247b58;
+  --plane: #f2f0ec;
+  --surface: #fcfbf8;
+  --surface-2: #eeece7;
+  --surface-3: #e5e1da;
+  --ink: #14120e;
+  --ink-2: #56514a;
+  --ink-3: #726c63;
+  --rule: #e3dfd8;
+  --rule-2: #cdc7bc;
+  --accent: #2470cc;
+  --accent-ink: #1c5cab;
+  --s-act: #2a78d6;
+  --s-ce: #d15325;
+  --s-oracle: #149468;
   --wrap: 1220px;
-  --r: 4px;
+  --r: 3px;
 }
 :root[data-theme="dark"] {
-  --plane: #101716;
-  --surface: #18211f;
-  --surface-2: #202c28;
-  --surface-3: #2b3832;
-  --ink: #edf1e9;
-  --ink-2: #bdcbbf;
-  --ink-3: #9aaea0;
-  --rule: #344139;
-  --rule-2: #506154;
-  --accent: #3987e5;
-  --accent-ink: #98c6f0;
-  --s-act: #70afe3;
-  --s-ce: #ed9a70;
-  --s-oracle: #7ac89b;
+  --plane: #131519;
+  --surface: #181b20;
+  --surface-2: #1e2229;
+  --surface-3: #262b33;
+  --ink: #e3e6ea;
+  --ink-2: #a7aeb8;
+  --ink-3: #7b838e;
+  --rule: #232830;
+  --rule-2: #323841;
+  --accent: #6ba6ec;
+  --accent-ink: #9cc5f4;
+  --s-act: #6ba6ec;
+  --s-ce: #e2814f;
+  --s-oracle: #45bb8e;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --plane: #101716;
-    --surface: #18211f;
-    --surface-2: #202c28;
-    --surface-3: #2b3832;
-    --ink: #edf1e9;
-    --ink-2: #bdcbbf;
-    --ink-3: #9aaea0;
-    --rule: #344139;
-    --rule-2: #506154;
-    --accent: #3987e5;
-    --accent-ink: #98c6f0;
-    --s-act: #70afe3;
-    --s-ce: #ed9a70;
-    --s-oracle: #7ac89b;
+    --plane: #131519;
+    --surface: #181b20;
+    --surface-2: #1e2229;
+    --surface-3: #262b33;
+    --ink: #e3e6ea;
+    --ink-2: #a7aeb8;
+    --ink-3: #7b838e;
+    --rule: #232830;
+    --rule-2: #323841;
+    --accent: #6ba6ec;
+    --accent-ink: #9cc5f4;
+    --s-act: #6ba6ec;
+    --s-ce: #e2814f;
+    --s-oracle: #45bb8e;
   }
 }
 .skip-link {
@@ -1542,12 +1550,12 @@ input[type="range"]::-moz-range-thumb {
   grid-column: 1/-1;
   justify-content: space-between;
   max-height: none;
-  font-size: 10px;
+  font-size: 13px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--rule-2);
 }
 .hero-title {
-  font-size: clamp(44px, 5.8vw, 78px);
+  font-size: clamp(52px, 5.8vw, 92px);
   line-height: 0.98;
   font-weight: 500;
   letter-spacing: -0.06em;
@@ -1557,7 +1565,7 @@ input[type="range"]::-moz-range-thumb {
   color: var(--accent-ink);
 }
 .claim__text {
-  font-size: clamp(16px, 1.65vw, 21px);
+  font-size: clamp(19px, 1.65vw, 25px);
   font-weight: 400;
   line-height: 1.55;
   letter-spacing: -0.015em;
@@ -1572,7 +1580,7 @@ input[type="range"]::-moz-range-thumb {
   opacity: 1;
 }
 .claim.is-condensed .claim__text {
-  font-size: clamp(16px, 1.65vw, 21px);
+  font-size: clamp(19px, 1.65vw, 25px);
 }
 .tabs {
   top: 0;
@@ -1596,7 +1604,7 @@ main {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font: 10px var(--mono);
+  font: 13px var(--mono);
   letter-spacing: 0.12em;
   color: var(--ink-3);
   margin-top: 14px;
@@ -1612,20 +1620,20 @@ main {
 .guide__index {
   align-self: stretch;
   white-space: nowrap;
-  font: 11px var(--mono);
+  font: 13px var(--mono);
   color: var(--accent-ink);
   border-right: 1px solid var(--rule-2);
   padding-right: 22px;
   padding-top: 4px;
 }
 .kicker {
-  font: 10px var(--mono);
+  font: 13px var(--mono);
   letter-spacing: 0.1em;
   color: var(--ink-3);
   margin-bottom: 8px;
 }
 .guide h2 {
-  font-size: 20px;
+  font-size: 23.5px;
   font-weight: 500;
   line-height: 1.3;
   margin-bottom: 6px;
@@ -1634,7 +1642,7 @@ main {
   flex: 1;
 }
 .guide__body > p:last-child {
-  font-size: 13px;
+  font-size: 15.5px;
   color: var(--ink-2);
   max-width: 70ch;
 }
@@ -1651,7 +1659,7 @@ main {
   border-radius: 3px;
   background: var(--accent);
   color: white;
-  font: 500 12px var(--sans);
+  font: 500 14px var(--sans);
   padding: 11px 15px;
   min-height: 44px;
   cursor: pointer;
@@ -1671,7 +1679,7 @@ main {
   align-items: center;
 }
 .figure__title {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 500;
   letter-spacing: -0.025em;
 }
@@ -1685,10 +1693,10 @@ main {
   gap: 15px;
 }
 .readout__value {
-  font-size: 20px;
+  font-size: 23.5px;
 }
 .readout__value--hero {
-  font-size: 48px;
+  font-size: 56.5px;
   font-weight: 500;
   letter-spacing: -0.06em;
 }
@@ -1697,13 +1705,13 @@ main {
   margin-left: 5px;
 }
 .readout__label {
-  font-size: 9px;
+  font-size: 13px;
 }
 .legend {
   padding: 0 26px 20px;
 }
 .badge {
-  font-size: 9px;
+  font-size: 13px;
 }
 .chart {
   padding: 0 18px;
@@ -1718,7 +1726,7 @@ main {
   padding: 18px 22px;
 }
 .control__label {
-  font-size: 10px;
+  font-size: 13px;
 }
 .segmented button {
   min-height: 40px;
@@ -1740,7 +1748,7 @@ main {
   gap: 20px;
 }
 .neuron-intro h2 {
-  font-size: 27px;
+  font-size: 32px;
   letter-spacing: -0.03em;
   font-weight: 500;
 }
@@ -1750,13 +1758,13 @@ main {
   text-align: right;
 }
 .neuron-stat strong {
-  font: 500 44px var(--mono);
+  font: 500 52px var(--mono);
   letter-spacing: -0.07em;
   color: var(--accent-ink);
   line-height: 1.1;
 }
 .neuron-stat span {
-  font: 10px var(--mono);
+  font: 13px var(--mono);
   color: var(--ink-3);
 }
 .token-controls {
@@ -1766,14 +1774,14 @@ main {
   margin: 22px 0 14px;
 }
 .token-controls label {
-  font: 11px var(--mono);
+  font: 13px var(--mono);
   white-space: nowrap;
 }
 .token-controls input {
   min-width: 30px;
 }
 .token-letter {
-  font: 500 20px var(--mono);
+  font: 500 23.5px var(--mono);
   width: 35px;
   text-align: center;
   background: var(--surface-2);
@@ -1789,7 +1797,7 @@ main {
   border-bottom: 1px solid var(--rule);
 }
 .token-strip span {
-  font: 11px var(--mono);
+  font: 13px var(--mono);
   flex: 1;
   min-width: 9px;
   text-align: center;
@@ -1829,7 +1837,7 @@ main {
   gap: 12px;
   flex-wrap: wrap;
   margin: 18px 0 10px;
-  font: 10px var(--mono);
+  font: 13px var(--mono);
   color: var(--ink-2);
 }
 .panel--mech,
@@ -1837,7 +1845,7 @@ main {
   padding: 26px;
 }
 .panel__head h2 {
-  font-size: 24px;
+  font-size: 28.5px;
   letter-spacing: -0.03em;
   font-weight: 500;
 }
@@ -1855,31 +1863,31 @@ main {
   border-left: 1px solid var(--rule);
 }
 .equation-grid p:not(.kicker) {
-  font-size: 13px;
+  font-size: 15.5px;
   color: var(--ink-2);
   margin-top: 12px;
 }
 .equation-grid .eq {
   min-height: 90px;
-  font-size: clamp(16px, 1.8vw, 22px);
+  font-size: clamp(19px, 1.8vw, 26px);
   gap: 3px;
   overflow: visible;
 }
 .equation-grid .src {
   display: inline-block;
-  font-size: 11px;
+  font-size: 13px;
   margin-top: 12px;
 }
 .mechanism-note {
   border-left: 3px solid var(--accent);
   padding: 8px 16px;
-  font-size: 14px;
+  font-size: 16.5px;
   color: var(--ink-2);
   background: var(--surface-2);
 }
 .panel details {
   margin-top: 18px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-2);
 }
 .panel summary {
@@ -1896,7 +1904,7 @@ main {
   gap: 24px 32px;
 }
 .honesty li {
-  font-size: 13px;
+  font-size: 15.5px;
 }
 .honesty li:last-child {
   grid-column: 1/-1;
@@ -1912,7 +1920,7 @@ main {
   width: 100%;
   border-collapse: collapse;
   margin: 18px 0;
-  font-size: 13px;
+  font-size: 15.5px;
 }
 .comparison-table th,
 .comparison-table td {
@@ -1957,18 +1965,18 @@ main {
     gap: 22px;
   }
   .claim__eyebrow {
-    font-size: 9px;
+    font-size: 13px;
     gap: 8px;
   }
   .eyebrow__topic {
     display: none;
   }
   .hero-title {
-    font-size: 58px;
+    font-size: 68.5px;
   }
   .claim__text,
   .claim.is-condensed .claim__text {
-    font-size: 16px;
+    font-size: 19px;
   }
   .tabs__inner {
     padding: 0 12px;
@@ -1986,7 +1994,7 @@ main {
   }
   .guide__index {
     padding-right: 12px;
-    font-size: 9px;
+    font-size: 13px;
   }
   .guide__body {
     min-width: 190px;
@@ -1996,26 +2004,26 @@ main {
     flex-wrap: wrap;
   }
   .guide h2 {
-    font-size: 18px;
+    font-size: 21px;
   }
   .section-label {
-    font-size: 8px;
+    font-size: 13px;
     letter-spacing: 0.06em;
   }
   .figure__head {
     padding: 20px 16px 16px;
   }
   .figure__title {
-    font-size: 20px;
+    font-size: 23.5px;
   }
   .readout__value--hero {
-    font-size: 39px;
+    font-size: 46px;
   }
   .readout__value {
-    font-size: 18px;
+    font-size: 21px;
   }
   .readout__value--hero {
-    font-size: 39px;
+    font-size: 46px;
   }
   .readout {
     gap: 10px;
@@ -2046,16 +2054,16 @@ main {
     padding: 18px 16px;
   }
   .neuron-intro h2 {
-    font-size: 22px;
+    font-size: 26px;
   }
   .neuron-stat strong {
-    font-size: 34px;
+    font-size: 40px;
   }
   .neuron-intro .figure__sub {
-    font-size: 11px;
+    font-size: 13px;
   }
   .neuron-stat span {
-    font-size: 8px;
+    font-size: 13px;
   }
   .token-controls {
     gap: 9px;
@@ -2065,7 +2073,7 @@ main {
     padding: 10px;
   }
   .token-controls label {
-    font-size: 10px;
+    font-size: 13px;
   }
   .token-letter {
     width: 25px;
@@ -2084,7 +2092,7 @@ main {
     min-width: 15px;
   }
   .grid-caption {
-    font-size: 9px;
+    font-size: 13px;
   }
   .equation-grid {
     grid-template-columns: 1fr;
@@ -2096,17 +2104,17 @@ main {
     border-top: 1px solid var(--rule);
   }
   .equation-grid .eq {
-    font-size: 20px;
+    font-size: 23.5px;
   }
   .honesty {
     grid-template-columns: 1fr;
     gap: 20px;
   }
   .panel__head h2 {
-    font-size: 22px;
+    font-size: 26px;
   }
   .comparison-table {
-    font-size: 10px;
+    font-size: 13px;
   }
   .comparison-table th,
   .comparison-table td {
@@ -2135,15 +2143,15 @@ main {
   margin-bottom: 12px;
 }
 .grid-model-label b {
-  font-size: 14px;
+  font-size: 16.5px;
   font-weight: 500;
 }
 .grid-model-label span {
-  font: 9px var(--mono);
+  font: 13px var(--mono);
   color: var(--ink-3);
 }
 .transformer-live-stat {
-  font: 9px/1.7 var(--mono);
+  font: 13px/1.7 var(--mono);
   color: var(--ink-2);
   margin-top: 12px;
 }
@@ -2159,7 +2167,7 @@ main {
 .comparison-table caption {
   text-align: left;
   color: var(--ink-3);
-  font-size: 11px;
+  font-size: 13px;
   margin-bottom: 6px;
 }
 @media (max-width: 700px) {
@@ -2180,7 +2188,7 @@ main {
   border-top: 1px solid var(--rule-2);
 }
 .resources h2 {
-  font-size: 27px;
+  font-size: 32px;
   font-weight: 500;
   letter-spacing: -0.035em;
 }
@@ -2195,7 +2203,7 @@ main {
   border: 1px solid var(--rule-2);
   background: var(--surface);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 17.5px;
   font-weight: 500;
 }
 .resources__links a:hover {
@@ -2204,12 +2212,12 @@ main {
 }
 .resources__links span {
   display: block;
-  font: 10px var(--mono);
+  font: 13px var(--mono);
   color: var(--ink-3);
   margin-top: 9px;
 }
 .resources > p {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-2);
   max-width: 85ch;
 }
@@ -2218,7 +2226,7 @@ main {
     padding: 22px 4px 4px;
   }
   .resources h2 {
-    font-size: 23px;
+    font-size: 27px;
   }
   .resources__links {
     grid-template-columns: 1fr;
@@ -2227,4 +2235,520 @@ main {
   .resources__links a {
     padding: 15px;
   }
+}
+
+
+/* =====================================================================
+   READING LAYER
+
+   This is a teaching instrument, so the page is set for reading, not for
+   fitting the most controls onto a screen. Body text is 18px on a 1.65
+   measure, nothing renders under 13px, and the small boxed chips that used
+   to label everything are gone: a label is now a word with a colour mark,
+   not a container.
+
+   Three type roles. Literata carries prose headings, Atkinson Hyperlegible
+   Next carries interface text, Atkinson Hyperlegible Mono carries every
+   measured number. The Atkinson faces were drawn for letter distinction at
+   reading sizes, which is what an instrument needs.
+   ===================================================================== */
+
+/* ---------------------------------------------------------- the ground */
+body {
+  font-size: 18px;
+  line-height: 1.65;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 31px,
+      color-mix(in srgb, var(--ink) 3%, transparent) 31px 32px
+    ),
+    repeating-linear-gradient(
+      to right,
+      transparent 0 31px,
+      color-mix(in srgb, var(--ink) 1.6%, transparent) 31px 32px
+    );
+  background-attachment: fixed;
+}
+
+p {
+  max-width: 76ch;
+}
+
+/* --------------------------------------------------------- type roles */
+.hero-title,
+.claim__text,
+.figure__title,
+.panel__head h2,
+.guide h2,
+.neuron-intro h2,
+.memory-lab__intro h2,
+.memory-lab__interpret h3,
+.memory-lab__reading h3,
+.resources h2,
+.faq__head h2,
+.shortcuts__head h2 {
+  font-family: var(--display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.003em;
+}
+
+.hero-title {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.hero-title em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.claim__text {
+  font-weight: 400;
+  font-size: clamp(19px, 1.8vw, 24px);
+  line-height: 1.48;
+  letter-spacing: -0.004em;
+  max-width: 62ch;
+}
+.claim__text strong {
+  font-weight: 600;
+}
+
+.figure__title,
+.panel__head h2,
+.neuron-intro h2,
+.guide h2 {
+  font-weight: 500;
+}
+.panel__head h2 {
+  font-size: 23px;
+}
+.figure__title {
+  font-size: 26px;
+}
+.guide h2 {
+  font-size: 24px;
+}
+
+.foot__col h3 {
+  font-family: var(--sans);
+  font-size: 16px;
+}
+
+/* copy that had been set as fine print */
+.figure__sub,
+.note,
+.control__meta,
+.mechanism-note,
+.foot__note,
+.resources > p,
+.honesty li,
+.mech li {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* every measured number, wherever it appears */
+.readout__value,
+.pm__val,
+.neuron-stat strong,
+.datatable td,
+.token-letter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -------------------------------------------------- figure separators */
+.section-label {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 2px 0;
+  border-top: 1px solid var(--rule-2);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 16px;
+}
+.section-label b {
+  font: 500 14px/1 var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--accent-ink);
+  flex: none;
+}
+.section-label span {
+  font: 500 18px/1.2 var(--display);
+  color: var(--ink);
+  flex: none;
+}
+.section-label em {
+  font: 400 15px/1.3 var(--sans);
+  font-style: normal;
+  color: var(--ink-3);
+  margin-left: auto;
+  text-align: right;
+  min-width: 0;
+}
+
+/* On a narrow screen the caption drops under the figure name instead of
+   being pushed off the side by margin-left: auto. */
+@media (max-width: 620px) {
+  .section-label {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .section-label em {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+  }
+}
+
+/* ------------------------------------------------------------ kickers */
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 15px/1.4 var(--sans);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.kicker::before {
+  content: "";
+  width: 18px;
+  height: 1px;
+  background: var(--rule-2);
+  flex: none;
+}
+
+/* ====================================================== LABELS, UNBOXED
+   The live / analytic / precomputed / synthetic labels are required: a
+   reader has to be able to tell a measurement from an oracle value at a
+   glance. They used to be 9.5px capitals inside coloured chips, which read
+   as decoration scattered over the page. They are now words at a readable
+   size, marked by a colour rule rather than wrapped in a box. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--ink-2);
+}
+/* The mark carries the series colour, the words carry the meaning. Colouring
+   the text with the series hue looked tidier but put --s-act at 4.27:1 in
+   light mode, under the 4.5:1 that text has to clear: a series hue is
+   measured as a graphical object, and the moment it becomes a word it is held
+   to the stricter bar. So the swatch keeps the hue and the label stays ink. */
+.badge::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: currentColor;
+  flex: none;
+}
+.badge--live::before {
+  background: var(--s-act);
+}
+.badge--analytic::before {
+  background: var(--s-oracle);
+}
+.badge--pre::before,
+.badge--source::before,
+.badge--syn::before {
+  background: var(--ink-3);
+}
+.badge--claim::before {
+  background: var(--accent-ink);
+}
+.badge--warn {
+  color: var(--warn-ink);
+}
+
+/* the phase summaries were four little boxes; make them one measured row */
+.phasemeans {
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.pm {
+  border: 0;
+  background: none;
+  border-left: 2px solid var(--rule-2);
+  border-radius: 0;
+  padding: 4px 0 4px 14px;
+}
+.pm__name {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--ink-3);
+}
+.pm__val {
+  font-size: 22px;
+}
+.pm__n {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+/* -------------------------------------------------------- panel chrome */
+.claim {
+  box-shadow: none;
+  border-bottom: 1px solid var(--rule-2);
+}
+.panel {
+  box-shadow: none;
+}
+
+/* ==================================================== LIFE: the chart ==
+   A new measurement has landed. The curves fade up together and the two
+   phase-mean plateaus draw left to right, which is the ratio in the readout
+   being written onto the curve it comes from. This animates an array that
+   has already been computed; it runs no inference. */
+#chartSvg.is-fresh .ln {
+  animation: seriesIn 420ms cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+#chartSvg.is-fresh .ln--ce {
+  animation-delay: 40ms;
+}
+#chartSvg.is-fresh .ln--act {
+  animation-delay: 80ms;
+}
+#chartSvg.is-fresh .ln--tr {
+  animation-delay: 120ms;
+}
+#chartSvg.is-fresh .plateau {
+  stroke-dasharray: var(--len);
+  animation: plateauDraw 560ms 200ms cubic-bezier(0.3, 0.8, 0.35, 1) both;
+}
+
+@keyframes seriesIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+}
+@keyframes plateauDraw {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ================================================= LIFE: the readout == */
+.readout__value {
+  transition: color 160ms ease;
+}
+.readout__value.is-fresh {
+  animation: valueTick 460ms ease;
+}
+@keyframes valueTick {
+  0% {
+    color: var(--accent);
+    transform: translateY(-2px);
+  }
+  40% {
+    color: var(--accent);
+  }
+  100% {
+    transform: none;
+  }
+}
+.readout.is-stale {
+  transition: opacity 120ms ease;
+}
+
+/* ==================================================== LIFE: the grids == */
+.neuron-cell {
+  transition:
+    background-color 110ms ease,
+    border-color 110ms ease;
+}
+.neuron-grid:hover .neuron-cell.active {
+  border-color: var(--accent-ink);
+}
+
+.token-strip span {
+  font-size: 14px;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.token-strip span:hover {
+  border-bottom-color: var(--rule-2);
+}
+.token-strip .selected {
+  border-bottom-color: var(--ink);
+}
+
+/* =================================================== LIFE: the controls */
+.primary-btn,
+.linkbtn,
+.segmented button,
+.tab {
+  transition:
+    background-color 130ms ease,
+    color 130ms ease,
+    border-color 130ms ease,
+    transform 90ms ease;
+}
+.primary-btn:active,
+.segmented button:active {
+  transform: translateY(1px);
+}
+
+.segmented button {
+  position: relative;
+}
+.segmented button.is-active::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 4px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.5;
+  animation: indicatorIn 200ms ease;
+}
+@keyframes indicatorIn {
+  from {
+    transform: scaleX(0.2);
+    opacity: 0;
+  }
+}
+
+.control input[type="text"] {
+  font-size: 18px;
+  transition:
+    border-color 130ms ease,
+    background-color 130ms ease;
+}
+
+.datatable tbody tr {
+  transition: background-color 110ms ease;
+}
+
+.foot__links a,
+.resources__links a {
+  transition:
+    color 130ms ease,
+    border-color 130ms ease,
+    background-color 130ms ease;
+}
+
+.guide {
+  animation: guideIn 420ms cubic-bezier(0.22, 0.7, 0.3, 1) both;
+}
+@keyframes guideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* ------------------------------------------------------ anchor landing */
+:target,
+.section-label[id],
+#memoryLab,
+#chartPanel {
+  scroll-margin-top: 140px;
+}
+
+/* Once the reader has scrolled past it the header stops being a title page
+   and becomes a reminder, so the display line goes and the bar collapses to
+   the claim itself. */
+.claim.is-condensed .hero-title {
+  display: none;
+}
+.claim.is-condensed .claim__inner {
+  padding: 13px 28px 14px;
+  gap: 5px 32px;
+  border-bottom: 0;
+}
+.claim.is-condensed .claim__text {
+  font-size: clamp(15px, 1.35vw, 17px);
+  line-height: 1.45;
+  max-width: 104ch;
+}
+
+/* --------------------------------------------------------- less motion */
+@media (prefers-reduced-motion: reduce) {
+  .guide,
+  #chartSvg.is-fresh .ln,
+  #chartSvg.is-fresh .plateau,
+  .readout__value.is-fresh,
+  .segmented button.is-active::after {
+    animation: none !important;
+  }
+  #chartSvg.is-fresh .plateau {
+    stroke-dasharray: none;
+  }
+  .neuron-cell,
+  .token-strip span,
+  .primary-btn,
+  .linkbtn,
+  .segmented button,
+  .tab,
+  .readout__value,
+  .datatable tbody tr,
+  .foot__links a,
+  .resources__links a,
+  .control input[type="text"] {
+    transition: none !important;
+  }
+}
+
+/* Inline code sits inside text of several sizes. Relative sizing keeps it in
+   proportion, and the floor keeps it above the reading minimum wherever it
+   lands. */
+code {
+  font-size: max(13px, 0.92em);
+}
+
+/* ================================================ INACTIVE LEGEND ITEM
+   In sandbox mode there is no generating process, so no oracle curve is
+   drawn and its legend entry is marked inactive. That state used to be
+   `opacity: 0.34` over the whole row, which composited the green down to
+   1.93:1 on the dark ground and 1.51:1 on the light one: legible on neither.
+   An entry the reader cannot read cannot tell them why the curve is missing.
+
+   The inactive state now changes colour rather than fading: text and mark
+   drop to --ink-3, which is measured at 4.5:1 dark and 5.02:1 light, and the
+   row says plainly that it is not plotted. */
+.legend__item.is-dim {
+  opacity: 1;
+}
+.legend__item.is-dim .legend__name,
+.legend__item.is-dim .badge {
+  color: var(--ink-3);
+}
+.legend__item.is-dim .legend__key,
+.legend__item.is-dim .legend__key--area {
+  background: none;
+  border: 1px solid var(--ink-3);
+  border-bottom: 1px solid var(--ink-3);
+  height: 3px;
+}
+.legend__item.is-dim .badge::before {
+  background: none;
+  box-shadow: inset 0 0 0 2px currentColor;
+}
+.legend__item.is-dim::after {
+  content: "not plotted here";
+  font: 400 14px/1 var(--sans);
+  color: var(--ink-3);
+  font-style: italic;
 }

@@ -1,6 +1,6 @@
 # Sparsity Is Not a Budget
 
-**In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.**
+**In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable, with the same weights, the same input length, and no sparsity setting touched anywhere.**
 
 ## A small instrument for a precise question
 
