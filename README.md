@@ -2,7 +2,7 @@
 
 > **In a trained BDH, the fraction of active neurons in layer 2 falls roughly 3× the moment the next letter becomes predictable — with the same weights, the same input length, and no sparsity setting touched anywhere.**
 
-[Public source repository](https://github.com/jabssyyy/data-forge) · [Open the public demo](https://rawcdn.githack.com/jabssyyy/data-forge/68780b82834ae3d51334bab8a54c23a43d48719d/index.html) · [Concept PDF](docs/concept-summary.pdf) · [Blog PDF](docs/blog.pdf)
+[Public source repository](https://github.com/jabssyyy/data-forge) · [Open the public demo](https://rawcdn.githack.com/jabssyyy/data-forge/67e4736b5ffc1e676d124868e78caa9ae349ab00/index.html) · [Concept PDF](docs/concept-summary.pdf) · [Blog PDF](docs/blog.pdf)
 
 The public demo is an immutable release snapshot served by githack; first-time visitors click its “Open the page” confirmation. No sign-in is required. Both live models and PDF downloads were checked in an unauthenticated browser. GitHub Pages deployment awaits the repository owner enabling **Settings → Pages → Source: GitHub Actions**; then rerun the deployment workflow. [Release checks](docs/submission-checklist.md).
 

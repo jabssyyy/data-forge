@@ -1,19 +1,20 @@
 {
-  "commit": "68780b82834ae3d51334bab8a54c23a43d48719d",
+  "checked_at": "2026-09-08T12:41:14.535Z",
+  "passed": true,
   "files": [
     {
       "file": "docs/concept-summary.pdf",
-      "sha256": "275d88e2e6804a986ad8cbd70f3346bbb7bb14d5391a91a4ef7e68bf3d5965f6",
-      "pages": 1,
-      "extracted_words": 714,
-      "anonymous_public_download_verified": true
+      "url": "https://rawcdn.githack.com/jabssyyy/data-forge/67e4736b5ffc1e676d124868e78caa9ae349ab00/docs/concept-summary.pdf",
+      "bytes": 7065,
+      "sha256": "56a4301ee827442d4de0c9d5102a0053d9ce5c972de360e33d95919a85b30877",
+      "matchesLocal": true
     },
     {
       "file": "docs/blog.pdf",
-      "sha256": "3fe9872d757e3499bf92ffe44dda35f77605e2f36f9cd7b44c49f8fa904ee3ef",
-      "pages": 3,
-      "extracted_words": 1700,
-      "anonymous_public_download_verified": true
+      "url": "https://rawcdn.githack.com/jabssyyy/data-forge/67e4736b5ffc1e676d124868e78caa9ae349ab00/docs/blog.pdf",
+      "bytes": 12952,
+      "sha256": "4f07ff434df125dfd8f085479aaea043c14b1d04726ff826d65d54b5c4394dd0",
+      "matchesLocal": true
     }
   ]
 }
