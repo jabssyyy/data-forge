@@ -1,3 +1,5 @@
 # Only needed to regenerate the PDF deliverables and the link-preview image.
 reportlab==5.0.0
 Pillow>=10.0
+# Optional: enables the built-in style and page checks.
+PyMuPDF>=1.24

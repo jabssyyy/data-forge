@@ -94,7 +94,14 @@
 
   function wireOutboundLinks() {
     markOutbound(document);
-    /* app.js writes the comparison table and some status lines after load */
+    /* app.js writes the offline comparison table (and its links) into
+     * #comparisonResults once an async fetch resolves, and that is the
+     * only place a link is written in after load. Watching that node
+     * instead of document.body keeps this observer quiet through token
+     * playback and grid rebuilds, which mutate the body constantly but
+     * never add a link. Fall back to document.body if that container is
+     * ever missing, so new links written elsewhere still get caught. */
+    var target = $("comparisonResults") || document.body;
     var observer = new MutationObserver(function (records) {
       records.forEach(function (record) {
         Array.prototype.forEach.call(record.addedNodes, function (node) {
@@ -102,7 +109,7 @@
         });
       });
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(target, { childList: true, subtree: true });
   }
 
   /* --------------------------------------------------- scroll indicator */
@@ -112,13 +119,24 @@
     if (!bar && !toTop) return;
     var ticking = false;
 
+    /* scrollHeight only changes when the viewport resizes or the document's
+     * content grows or shrinks (accordion open, grid built, comparison
+     * table dropped in, playback readouts). Reading it on every scroll
+     * frame forces a synchronous layout recompute right after the previous
+     * frame's transform write, every frame, for a number that is almost
+     * always unchanged. Cache it instead and only refresh on the events
+     * that can actually move it. */
+    var maxScroll = 0;
+    var refreshMax = function () {
+      maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    };
+    refreshMax();
+
     var update = function () {
       ticking = false;
-      var doc = document.documentElement;
-      var max = doc.scrollHeight - window.innerHeight;
-      var y = window.scrollY || doc.scrollTop || 0;
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
       if (bar) {
-        var ratio = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+        var ratio = maxScroll > 0 ? Math.min(1, Math.max(0, y / maxScroll)) : 0;
         bar.style.transform = "scaleX(" + ratio.toFixed(4) + ")";
       }
       if (toTop) {
@@ -139,7 +157,27 @@
       },
       { passive: true },
     );
-    window.addEventListener("resize", update, { passive: true });
+    window.addEventListener(
+      "resize",
+      function () {
+        refreshMax();
+        update();
+      },
+      { passive: true },
+    );
+
+    /* A ResizeObserver on the document element reports content-driven
+     * height changes asynchronously, after layout has already settled, so
+     * refreshing the cache from it never forces the reflow a per-frame
+     * scrollHeight read would. Where it is unsupported the cache still
+     * gets refreshed on load and on resize, which covers the common case. */
+    if (window.ResizeObserver) {
+      var heightObserver = new ResizeObserver(function () {
+        refreshMax();
+      });
+      heightObserver.observe(document.documentElement);
+    }
+
     update();
 
     if (toTop) {
@@ -148,8 +186,14 @@
           top: 0,
           behavior: reduceMotion.matches ? "auto" : "smooth",
         });
-        var skip = document.querySelector(".skip-link");
-        if (skip) skip.focus({ preventScroll: true });
+        /* Focus has to travel with the scroll or the next Tab resumes from
+         * the bottom of the page. It used to land on the skip link, which
+         * made that link flash into view over the header. The claim bar is
+         * the real top of the document, so send it there instead. */
+        var top = $("claimBar");
+        if (!top) return;
+        top.setAttribute("tabindex", "-1");
+        top.focus({ preventScroll: true });
       });
     }
   }

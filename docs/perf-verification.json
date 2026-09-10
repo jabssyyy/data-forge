@@ -1,0 +1,165 @@
+{
+  "url": "http://127.0.0.1:8034/",
+  "checked_at": "2026-09-10T03:40:32.466Z",
+  "note": "These are headless Chromium numbers from one machine on one occasion, not a claim about any particular phone or a busy laptop. They measure this page's own frame pacing and Chrome's internal layout counters, which is the most objective signal available in this environment, but they are not a substitute for feel-testing on real hardware.",
+  "thresholds": {
+    "scrollP95Ms": 32,
+    "scrollFramesOver50Max": 2,
+    "playbackP95Ms": 32,
+    "playbackFramesOver50Max": 2,
+    "longTaskMaxMs": 200,
+    "timeToFirstMeasurementMs": 4000
+  },
+  "runsPlanned": {
+    "ttfm": 5,
+    "scroll": 5,
+    "playback": 3
+  },
+  "errors": [],
+  "checks": [
+    "Time to first measurement over 5 fresh loads: median 543ms, worst 982ms",
+    "Scroll, 5 runs of 120 steps each: median frame interval 7ms, p95 14ms, worst 20.9ms, frames over 50ms 0 (median across runs)",
+    "CDP layout counters across the scroll runs: +71 layouts, +1217 style recalcs, 80.67ms layout time, 213.99ms recalc time",
+    "Token playback, 3 full runs of 77 tokens: median frame interval 7ms, p95 21ms, worst 117.9ms, frames over 50ms 12 (median across runs)",
+    "Long tasks during scroll and playback: 9 totalling 512ms, longest 64ms"
+  ],
+  "failures": [
+    "playback frames over 50ms (12, median across runs) exceeds 2"
+  ],
+  "metrics": {
+    "timeToFirstMeasurementMs": {
+      "runs": 5,
+      "medianMs": 543,
+      "worstMs": 982,
+      "perRun": [
+        982,
+        621,
+        520,
+        543,
+        535
+      ]
+    },
+    "scroll": {
+      "runs": 5,
+      "medianMs": 7,
+      "p95Ms": 14,
+      "worstMs": 20.9,
+      "framesOver32ms": 0,
+      "framesOver50ms": 0,
+      "perRun": [
+        {
+          "frameCount": 120,
+          "medianMs": 7,
+          "p95Ms": 27.9,
+          "worstMs": 69.5,
+          "framesOver32ms": 4,
+          "framesOver50ms": 1
+        },
+        {
+          "frameCount": 120,
+          "medianMs": 7,
+          "p95Ms": 13.9,
+          "worstMs": 20.8,
+          "framesOver32ms": 0,
+          "framesOver50ms": 0
+        },
+        {
+          "frameCount": 120,
+          "medianMs": 7,
+          "p95Ms": 14,
+          "worstMs": 20.9,
+          "framesOver32ms": 0,
+          "framesOver50ms": 0
+        },
+        {
+          "frameCount": 120,
+          "medianMs": 7,
+          "p95Ms": 14,
+          "worstMs": 20.9,
+          "framesOver32ms": 0,
+          "framesOver50ms": 0
+        },
+        {
+          "frameCount": 120,
+          "medianMs": 7,
+          "p95Ms": 14,
+          "worstMs": 20.8,
+          "framesOver32ms": 0,
+          "framesOver50ms": 0
+        }
+      ]
+    },
+    "cdp": {
+      "before": {
+        "LayoutCount": 0,
+        "RecalcStyleCount": 0,
+        "LayoutDuration": 0,
+        "RecalcStyleDuration": 0
+      },
+      "after": {
+        "LayoutCount": 71,
+        "RecalcStyleCount": 1217,
+        "LayoutDuration": 0.080675,
+        "RecalcStyleDuration": 0.213985
+      },
+      "delta": {
+        "LayoutCount": 71,
+        "RecalcStyleCount": 1217,
+        "LayoutDurationMs": 80.67,
+        "RecalcStyleDurationMs": 213.99
+      },
+      "note": "Before/after span the 5 scroll runs above. Reported for visibility, not gated on a threshold: some layout and style recalc work during a scroll pass is expected and not itself a defect."
+    },
+    "playback": {
+      "runs": 3,
+      "medianMs": 7,
+      "p95Ms": 21,
+      "worstMs": 117.9,
+      "framesOver32ms": 25,
+      "framesOver50ms": 12,
+      "perRun": [
+        {
+          "frameCount": 843,
+          "medianMs": 7,
+          "p95Ms": 21,
+          "worstMs": 117.9,
+          "framesOver32ms": 25,
+          "framesOver50ms": 12
+        },
+        {
+          "frameCount": 701,
+          "medianMs": 7.1,
+          "p95Ms": 34.8,
+          "worstMs": 118,
+          "framesOver32ms": 47,
+          "framesOver50ms": 15
+        },
+        {
+          "frameCount": 867,
+          "medianMs": 7,
+          "p95Ms": 20.9,
+          "worstMs": 97.3,
+          "framesOver32ms": 21,
+          "framesOver50ms": 11
+        }
+      ]
+    },
+    "longTasks": {
+      "count": 9,
+      "totalMs": 512,
+      "longestMs": 64,
+      "all": [
+        64,
+        50,
+        64,
+        52,
+        64,
+        52,
+        52,
+        52,
+        62
+      ]
+    }
+  },
+  "passed": false
+}

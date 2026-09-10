@@ -1,6 +1,6 @@
 {
   "url": "http://127.0.0.1:8000/",
-  "checked_at": "2026-09-08T16:36:42.778Z",
+  "checked_at": "2026-09-10T03:24:34.360Z",
   "errors": [],
   "checks": [
     "Skeleton renders while loading and is cleared after the measurement; canonical ratio 3.10×",
@@ -10,6 +10,7 @@
     "Chart zoom widens the token axis (1146 to 1719), reset restores it, measurement unchanged",
     "No visible text renders below 13px",
     "Legend text clears 4.5:1 as rendered in both themes, including the inactive entry (lowest 4.57:1)",
+    "Cell provenance matches the weight file for 4 coordinates, and 96x1024+2048 and 64x1024+6144 account for both models exactly",
     "Every outbound link opens in a new tab with rel=noopener",
     "Question list expands and collapses (8 items)",
     "Privacy note shows once, dismisses, and is remembered",

@@ -759,3 +759,132 @@ kbd {
     min-height: 44px;
   }
 }
+
+/* =============================================== CELL PROVENANCE PANEL
+   Reports which learned numbers belong to the square the reader is pointing
+   at. It sits under the grids rather than in a floating tooltip so the
+   numbers can be read, compared and kept on screen while the token or the
+   layer changes. */
+.cellinspect {
+  margin: 20px 0 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--surface-2);
+  min-height: 96px;
+}
+.cellinspect__empty {
+  font: 400 16px/1.6 var(--sans);
+  color: var(--ink-3);
+  margin: 0;
+}
+.cellinspect__head {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.cellinspect__head h3 {
+  font: 500 20px/1.2 var(--display);
+  color: var(--ink);
+  margin: 0;
+}
+.cellinspect__state {
+  font: 600 14px/1 var(--sans);
+  color: var(--ink-3);
+}
+.cellinspect__state.is-active {
+  color: var(--s-act);
+}
+.cellinspect__head .linkbtn {
+  margin-left: auto;
+}
+.cellinspect__where {
+  font: 400 14px/1.5 var(--mono);
+  color: var(--ink-2);
+  margin: 6px 0 14px;
+}
+.cellinspect__value {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+}
+.cellinspect__value div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cellinspect__value dt {
+  font: 400 14px/1.3 var(--sans);
+  color: var(--ink-3);
+}
+.cellinspect__value dd {
+  margin: 0;
+  font: 500 20px/1.2 var(--mono);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cellinspect__params {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cellinspect__params caption {
+  text-align: left;
+  font: 400 14px/1.5 var(--sans);
+  color: var(--ink-3);
+  padding-bottom: 8px;
+}
+.cellinspect__params th,
+.cellinspect__params td {
+  text-align: left;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.cellinspect__params thead th {
+  font: 600 13px/1 var(--sans);
+  color: var(--ink-3);
+  text-transform: none;
+}
+.cellinspect__params tbody th {
+  font: 500 16px/1 var(--mono);
+  color: var(--ink);
+}
+.cellinspect__params td {
+  font-family: var(--mono);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.cellinspect__params code {
+  font-size: 13px;
+}
+.spark {
+  display: block;
+}
+.cellinspect__note {
+  font: 400 14px/1.6 var(--sans);
+  color: var(--ink-3);
+  margin: 12px 0 0;
+  max-width: 88ch;
+}
+
+/* the square being reported on */
+.neuron-cell.is-picked {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+  z-index: 1;
+}
+.neuron-grid:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+@media (max-width: 700px) {
+  .cellinspect__params {
+    display: block;
+    overflow-x: auto;
+  }
+}

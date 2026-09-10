@@ -553,6 +553,52 @@
             </button>
           </div>
         </div>
+        <div class="cellinspect" id="cellInspect" role="region" aria-live="polite" aria-label="Selected coordinate">
+          <p class="cellinspect__empty" id="cellInspectEmpty">
+            Point at a square, or select one, to see which of the model's
+            learned numbers belong to it.
+          </p>
+          <div class="cellinspect__body" id="cellInspectBody" hidden>
+            <div class="cellinspect__head">
+              <h3 id="cellInspectTitle">Neuron</h3>
+              <span class="cellinspect__state" id="cellInspectState"></span>
+              <button
+                class="linkbtn"
+                id="cellInspectClear"
+                type="button"
+                hidden
+              >
+                Clear selection
+              </button>
+            </div>
+            <p class="cellinspect__where" id="cellInspectWhere"></p>
+            <dl class="cellinspect__value">
+              <div>
+                <dt id="cellInspectValueLabel">Measured value</dt>
+                <dd id="cellInspectValue"></dd>
+              </div>
+              <div>
+                <dt>Parameters owned</dt>
+                <dd id="cellInspectOwned"></dd>
+              </div>
+            </dl>
+            <table class="cellinspect__params">
+              <caption id="cellInspectCaption"></caption>
+              <thead>
+                <tr>
+                  <th scope="col">Symbol</th>
+                  <th scope="col">Where it lives</th>
+                  <th scope="col">Values</th>
+                  <th scope="col">L2 norm</th>
+                  <th scope="col">Range</th>
+                </tr>
+              </thead>
+              <tbody id="cellInspectRows"></tbody>
+            </table>
+            <p class="cellinspect__note" id="cellInspectNote"></p>
+          </div>
+        </div>
+
         <div class="grid-caption">
           <p id="gridStatus" role="status">
             Waiting for the live forward pass.
@@ -561,7 +607,9 @@
         </div>
         <p class="note">
           “Memorize” labels the first encounter with the word; the label does
-          not prove successful recall. Token indices start at 0. Playback visits
+          not prove successful recall. Point at a square, or focus a grid and
+          use the arrow keys, to see which of the model&rsquo;s learned numbers
+          belong to that coordinate. Token indices start at 0. Playback visits
           an existing measured tensor at 8 tokens/second; it does not run
           inference each frame. Cell order: head, then neuron. Brightness does
           not encode magnitude. Matching cell positions do not imply
@@ -1289,6 +1337,8 @@
           <div><dt><kbd>0</kbd> <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Select the measured layer</dd></div>
           <div><dt><kbd>W</kbd></dt><dd>Switch trained and untrained weights</dd></div>
           <div><dt><kbd>S</kbd></dt><dd>Switch instrument and sandbox</dd></div>
+          <div><dt><kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd></dt><dd>Move the cursor, once a neuron grid has focus</dd></div>
+          <div><dt><kbd>Enter</kbd></dt><dd>Pin the coordinate under the cursor</dd></div>
           <div><dt><kbd>M</kbd></dt><dd>Jump to the memory lab</dd></div>
           <div><dt><kbd>T</kbd></dt><dd>Cycle the colour theme</dd></div>
           <div><dt><kbd>G</kbd></dt><dd>Back to the top</dd></div>

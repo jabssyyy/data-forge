@@ -186,3 +186,73 @@ The audit is submission bookkeeping about a supplied requirements image, not
 teaching material, and it stays in the repository as evidence rather than
 sitting in the resources a learner is offered. Lowest rendered legend contrast
 is now 4.57:1.
+
+## Coordinate provenance, 2026-09-10
+
+Asked whether a square in the neuron grids could report which parameters it
+owns and where they come from. It can, exactly, so it now does.
+
+Each square is one coordinate of one model, and a specific block of learned
+numbers belongs to it. For BDH, coordinate n sits in head n div 256 at local
+index n mod 256, and owns one column of D_x (`encoder`), one column of D_y
+(`encoder_v`) and one row of E (`decoder`), 32 values each: 96 parameters. For
+the Transformer, hidden unit n owns one column of W1 and one row of W2: 64
+parameters. The decomposition accounts for both models with nothing left
+unexplained: 96 x 1024 + 2,048 = 100,352 and 64 x 1024 + 6,144 = 71,680, where
+the remainders are the embedding, the output head and, for the Transformer, the
+four attention projections. Those belong to no single coordinate and the panel
+says so rather than dividing them up.
+
+The panel reports identity, the measured value on the selected token, and for
+each slice its address, a sparkline of the 32 values, its L2 norm and its
+range. It states no interpretation. It repeats that position in the grid
+carries no meaning and that the same position in the other grid is a different
+model's parameter block, because a panel this specific invites exactly the
+correspondence the page has always denied.
+
+Interaction: pointer hover previews, click pins, and clicking the pinned square
+again clears it. The grid is one tab stop with a cursor moved by the arrow
+keys, rather than 1,024 tab stops; the cells stay out of the accessibility tree
+and the panel is a polite live region, so moving the cursor is what gets
+announced.
+
+Verification: `scripts/ui_check.cjs` now recomputes the three BDH slices for
+coordinates 0, 5, 517 and 1023 straight from `weights_trained.json`, by a
+different index path than the page uses, and requires the norms to agree within
+5e-4 and the printed addresses to match exactly. It also asserts both parameter
+identities. A wrong axis would otherwise have produced a confident, false
+answer, which is the worst failure this panel could have. The suite passes 16
+checks with zero page errors.
+
+Also fixed: the back-to-top button moved focus to the skip link, which made
+that link flash into view over the header. Focus now goes to the claim bar,
+which is the real top of the document, with the ring shown only when the
+keyboard put it there.
+
+## Deliverable PDFs reset, 2026-09-10
+
+The two PDFs read as generated documents: a blue rule across the head of every
+page, blue section headings, a blue-tinted table header, everything in
+Helvetica. They are now black on white in the standard Times faces, with no
+accent colour, no page rule and no fills. Tables use the three-rule
+convention: a rule above the header, a thin one under it, one at the foot, no
+verticals. Hierarchy is carried by size, weight and space.
+
+The alternative considered was setting them in Pathway's brand identity. That
+was rejected. This artifact spends its whole length saying it is an
+independent reimplementation and not an official BDH model, and dressing the
+deliverables in the sponsor's identity would visually assert the affiliation
+the text denies. Black on white asserts nothing.
+
+While rendering to check the result, a real defect surfaced. See
+`pdf-verification.md`: the generator decoded its Markdown with the platform
+default encoding, so on a cp1252 machine the published pages rendered mojibake
+while text extraction still returned the intended characters, which is why the
+existing word-count and extraction checks had passed over it. The read is now
+explicitly UTF-8 and an encodability assertion fails the build rather than
+shipping unrenderable characters. The one-page limit is met by searching for
+the largest type that fits instead of a hand-tuned constant.
+
+Final: concept summary one page, 714 visible source words and 698 extracted,
+inside the 500 to 950 rule; blog three pages, 1,693 visible source words and
+1,712 extracted. Every page was re-rendered and visually inspected.

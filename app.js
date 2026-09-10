@@ -1490,7 +1490,12 @@ function wireTheme() {
   else if (mq.addListener) mq.addListener(onSchemeChange);
 }
 
-/* the sticky tab strip must sit exactly under the sticky claim bar */
+/* The sticky tab strip must sit exactly under the sticky claim bar. h is
+ * fixed at 0, so this writes the same custom property value every time it
+ * runs - it does not depend on scroll position, the claim bar's condensed
+ * state, or anything else that changes during scrolling. Call it once, not
+ * per frame: a custom-property write on the root element invalidates style
+ * for every element that inherits it, which is most of the page. */
 function syncStickyOffsets() {
   const h = 0;
   document.documentElement.style.setProperty("--claim-h", h + "px");
@@ -1503,7 +1508,6 @@ function wireScrollCondense() {
     ticking = true;
     requestAnimationFrame(() => {
       el.claimBar.classList.toggle("is-condensed", window.scrollY > 64);
-      syncStickyOffsets();
       ticking = false;
     });
   };
@@ -1589,12 +1593,16 @@ function wireChartZoom() {
   updateChartZoomUi();
 }
 
+/* Only chartWrap's own size feeds renderChart/renderInspector (chart width,
+ * grid layout). el.claimBar used to be observed too, but its height changes
+ * on every scroll-driven condense toggle (see wireScrollCondense), so that
+ * observation fired mid-scroll and forced a full chart redraw plus a
+ * 2,048-cell inspector pass for a resize neither of them reads. */
 function wireResize() {
   let t = 0;
   const ro = new ResizeObserver(() => {
     clearTimeout(t);
     t = setTimeout(() => {
-      syncStickyOffsets();
       if (state.result) {
         renderChart();
         renderInspector();
@@ -1602,7 +1610,6 @@ function wireResize() {
     }, 90);
   });
   ro.observe(el.chartWrap);
-  ro.observe(el.claimBar);
 }
 
 /* ------------------------------------------------------------- boot */
@@ -1687,6 +1694,17 @@ let memoryLabController = null;
 let playbackTimer = 0;
 const neuronCells = [];
 const transformerCells = [];
+/* Shadow of which cells are currently marked "active" in the DOM. During
+ * playback the selected token changes 8 times a second, each time walking
+ * all 1,024 cells of a grid to find which are active. Most cells keep the
+ * same state from one token to the next, so classList.toggle is only called
+ * on the ones whose state actually flipped, instead of on all 1,024 every
+ * time. The active/inactive set drawn is identical either way; only the
+ * number of DOM writes changes. Both shadows are reset to all-zero wherever
+ * the corresponding grid is cleared, so they never drift from what the DOM
+ * shows. */
+const neuronActiveShadow = new Uint8Array(N_TOTAL);
+const transformerActiveShadow = new Uint8Array(N_TOTAL);
 function stopPlayback() {
   clearInterval(playbackTimer);
   playbackTimer = 0;
@@ -1717,11 +1735,13 @@ function renderInspector() {
       "Waiting for the selected model’s measured activations.";
     $("transformerLiveStat").textContent = "Waiting for the selected model.";
     for (const cell of transformerCells) cell.classList.remove("active");
+    transformerActiveShadow.fill(0);
     $("neuronGrid").setAttribute(
       "aria-label",
       "Neuron measurement unavailable",
     );
     for (const cell of neuronCells) cell.classList.remove("active");
+    neuronActiveShadow.fill(0);
     return;
   }
   const t = Math.min(state.selectedToken, r.T - 1);
@@ -1734,7 +1754,12 @@ function renderInspector() {
     const h = Math.floor(n / perHead),
       local = n % perHead;
     const active = raw[(h * r.T + t) * perHead + local] > 0;
-    neuronCells[n].classList.toggle("active", active);
+    /* every cell's active state is still computed and counted every call;
+     * only the DOM write for cells that changed is skipped */
+    if (active !== !!neuronActiveShadow[n]) {
+      neuronCells[n].classList.toggle("active", active);
+      neuronActiveShadow[n] = active ? 1 : 0;
+    }
     count += active ? 1 : 0;
   }
   if (count !== r.activeCounts[state.layer][t])
@@ -1796,12 +1821,392 @@ function renderInspector() {
   setHover(t);
   el.tooltip.hidden = true;
 }
+/* ==================================================== CELL PROVENANCE ===
+ * A square in either grid is one coordinate of one model, and a specific
+ * block of learned numbers belongs to it. This reads those numbers straight
+ * out of the loaded weight arrays and reports where they live, so a reader
+ * can go from "a square lit up" to "these are the parameters that made it
+ * light up".
+ *
+ * The parameter accounting is exact and checkable against the totals printed
+ * on the page:
+ *
+ *   BDH, 100,352 total. Each of the 1,024 coordinates owns one column of
+ *   D_x, one column of D_y and one row of E, 32 values each, so 96 per
+ *   coordinate and 98,304 across the grid. The remaining 2,048 are the
+ *   token embedding and the output head, which belong to no coordinate.
+ *
+ *   Transformer, 71,680 total. Each of the 1,024 hidden units owns one
+ *   column of W1 and one row of W2, so 64 per unit and 65,536 across the
+ *   grid. The remaining 6,144 are the four attention projections, the
+ *   embedding and the output head.
+ *
+ * Nothing here is interpretation. It reports identity, the measured value,
+ * and the weights attached to that coordinate. No claim is made that a
+ * coordinate stands for anything, or that the same position in the two
+ * grids has anything to do with the other model.
+ * -------------------------------------------------------------------- */
+
+const CELL_STATS_SAMPLE = 32; // every slice on this page is 32 values long
+
+/* pinned cell, or null while the reader is only pointing at squares */
+let pinnedCell = null;
+
+function vectorStats(read, count) {
+  let sumSquares = 0;
+  let min = Infinity;
+  let max = -Infinity;
+  const values = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const v = read(i);
+    values[i] = v;
+    sumSquares += v * v;
+    if (v < min) min = v;
+    if (v > max) max = v;
+  }
+  return {
+    values: values,
+    norm: Math.sqrt(sumSquares),
+    min: min,
+    max: max,
+    count: count,
+  };
+}
+
+/* a 32-value slice drawn at a size that can sit inside a table cell */
+function sparkline(stats) {
+  const w = 96;
+  const h = 20;
+  const extent = Math.max(Math.abs(stats.min), Math.abs(stats.max)) || 1;
+  const mid = h / 2;
+  const step = w / stats.count;
+  let bars = "";
+  for (let i = 0; i < stats.count; i++) {
+    const v = stats.values[i];
+    const height = Math.max(1, (Math.abs(v) / extent) * (h / 2 - 1));
+    const y = v >= 0 ? mid - height : mid;
+    bars +=
+      '<rect x="' +
+      (i * step).toFixed(2) +
+      '" y="' +
+      y.toFixed(2) +
+      '" width="' +
+      Math.max(1, step - 0.6).toFixed(2) +
+      '" height="' +
+      height.toFixed(2) +
+      '" fill="' +
+      (v >= 0 ? cssVar("--s-act") : cssVar("--s-ce")) +
+      '"/>';
+  }
+  return (
+    '<svg class="spark" width="' +
+    w +
+    '" height="' +
+    h +
+    '" viewBox="0 0 ' +
+    w +
+    " " +
+    h +
+    '" role="img" aria-label="' +
+    stats.count +
+    " learned values, smallest " +
+    stats.min.toFixed(3) +
+    ", largest " +
+    stats.max.toFixed(3) +
+    '">' +
+    '<line x1="0" y1="' +
+    mid +
+    '" x2="' +
+    w +
+    '" y2="' +
+    mid +
+    '" stroke="' +
+    cssVar("--rule-2") +
+    '" stroke-width="1"/>' +
+    bars +
+    "</svg>"
+  );
+}
+
+/* Describe one BDH coordinate: which head it sits in, what it measured on
+ * the selected token, and the three weight slices that belong to it. */
+function describeBdhCell(n) {
+  const model = models[state.weights];
+  if (!model || !model.w) return null;
+  const w = model.w;
+  const D = w.D;
+  const N = w.N;
+  const head = Math.floor(n / N);
+  const local = n % N;
+
+  const r = state.result;
+  let value = null;
+  if (r && !r.pending && r.xySparse) {
+    const raw = r.xySparse[state.layer];
+    const t = Math.min(state.selectedToken, r.T - 1);
+    value = raw[(head * r.T + t) * N + local];
+  }
+
+  const encBase = head * D * N;
+  return {
+    model: "BDH",
+    index: n,
+    head: head,
+    local: local,
+    value: value,
+    valueLabel: "Measured gated product",
+    valueSymbol: "xy_sparse",
+    owned: 3 * D,
+    total: 100352,
+    rows: [
+      {
+        symbol: "D_x",
+        where: "encoder[head " + head + "][:, " + local + "]",
+        stats: vectorStats((d) => w.encoder[encBase + d * N + local], D),
+      },
+      {
+        symbol: "D_y",
+        where: "encoder_v[head " + head + "][:, " + local + "]",
+        stats: vectorStats((d) => w.encoderV[encBase + d * N + local], D),
+      },
+      {
+        symbol: "E",
+        where: "decoder[" + n + ", :]",
+        stats: vectorStats((d) => w.decoder[n * D + d], D),
+      },
+    ],
+    note:
+      "All four layers share these 96 numbers. Depth changes the state coming in, not the weights. " +
+      "The remaining 2,048 parameters are the token embedding and the output head, which belong to no single coordinate.",
+  };
+}
+
+/* Describe one Transformer hidden unit. Its tensor has no head axis. */
+function describeTransformerCell(n) {
+  const model = transformerModels[state.weights];
+  if (!model || !model.p) return null;
+  const D = model.w.D;
+  const F = model.w.nTotal;
+
+  const out = liveTransformerResult();
+  let value = null;
+  if (out && out.hidden) {
+    const t = Math.min(state.selectedToken, out.T - 1);
+    value = out.hidden[state.layer][t * F + n];
+  }
+
+  return {
+    model: "ReLU Transformer",
+    index: n,
+    head: null,
+    local: n,
+    value: value,
+    valueLabel: "Measured hidden activation",
+    valueSymbol: "ReLU(zW1)",
+    owned: 2 * D,
+    total: 71680,
+    rows: [
+      {
+        symbol: "W1",
+        where: "W1[:, " + n + "]",
+        stats: vectorStats((d) => model.p.W1[d * F + n], D),
+      },
+      {
+        symbol: "W2",
+        where: "W2[" + n + ", :]",
+        stats: vectorStats((d) => model.p.W2[n * D + d], D),
+      },
+    ],
+    note:
+      "All four layers share these 64 numbers. The remaining 6,144 parameters are the four attention projections, " +
+      "the embedding and the output head, which belong to no single unit.",
+  };
+}
+
+function renderCellInspector(which, n) {
+  const body = $("cellInspectBody");
+  const empty = $("cellInspectEmpty");
+  if (n == null) {
+    body.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+  const info =
+    which === "bdh" ? describeBdhCell(n) : describeTransformerCell(n);
+  if (!info) {
+    body.hidden = true;
+    empty.hidden = false;
+    return;
+  }
+
+  empty.hidden = true;
+  body.hidden = false;
+
+  const active = info.value != null && info.value > 0;
+  $("cellInspectTitle").textContent =
+    (which === "bdh" ? "Neuron " : "Hidden unit ") + info.index;
+  const stateNode = $("cellInspectState");
+  stateNode.textContent =
+    info.value == null ? "not measured yet" : active ? "active" : "silent";
+  stateNode.classList.toggle("is-active", active);
+
+  const where = [info.model];
+  if (info.head != null)
+    where.push("head " + info.head, "coordinate " + info.local);
+  where.push("layer " + state.layer, "token " + state.selectedToken);
+  where.push(state.weights + " weights");
+  $("cellInspectWhere").textContent = where.join(" · ");
+
+  $("cellInspectValueLabel").textContent =
+    info.valueLabel + " (" + info.valueSymbol + ")";
+  $("cellInspectValue").textContent =
+    info.value == null ? "·" : info.value.toFixed(6);
+  $("cellInspectOwned").textContent =
+    info.owned + " of " + info.total.toLocaleString("en-US");
+
+  $("cellInspectCaption").textContent =
+    "The learned numbers attached to this coordinate, read from the loaded " +
+    state.weights +
+    " weight file.";
+
+  $("cellInspectRows").innerHTML = info.rows
+    .map(function (row) {
+      return (
+        "<tr><th scope=\"row\">" +
+        esc(row.symbol) +
+        "</th><td><code>" +
+        esc(row.where) +
+        "</code></td><td>" +
+        sparkline(row.stats) +
+        "</td><td>" +
+        row.stats.norm.toFixed(4) +
+        "</td><td>" +
+        row.stats.min.toFixed(3) +
+        " to " +
+        row.stats.max.toFixed(3) +
+        "</td></tr>"
+      );
+    })
+    .join("");
+
+  $("cellInspectNote").textContent =
+    info.note +
+    " Position in the grid carries no meaning, and the same position in the other grid is a different model's parameter block.";
+  $("cellInspectClear").hidden = !pinnedCell;
+}
+
+function showCell(which, n, pin) {
+  if (pin) pinnedCell = { which: which, n: n };
+  else if (pinnedCell) return; // a pinned cell outranks whatever is hovered
+  renderCellInspector(which, n);
+  markSelectedCell(which, n);
+}
+
+function markSelectedCell(which, n) {
+  const cells = which === "bdh" ? neuronCells : transformerCells;
+  const other = which === "bdh" ? transformerCells : neuronCells;
+  for (const cell of other) cell.classList.remove("is-picked");
+  for (let i = 0; i < cells.length; i++)
+    cells[i].classList.toggle("is-picked", i === n);
+}
+
+function clearPinnedCell() {
+  pinnedCell = null;
+  for (const cell of neuronCells) cell.classList.remove("is-picked");
+  for (const cell of transformerCells) cell.classList.remove("is-picked");
+  renderCellInspector(null, null);
+}
+
+/* One listener per grid rather than 1,024: the cells carry their index. */
+function wireCellInspector() {
+  const grids = [
+    { id: "neuronGrid", which: "bdh", cells: neuronCells },
+    { id: "transformerGrid", which: "transformer", cells: transformerCells },
+  ];
+
+  for (const grid of grids) {
+    const node = $(grid.id);
+    if (!node) continue;
+
+    node.addEventListener("pointerover", (event) => {
+      const cell = event.target.closest(".neuron-cell");
+      if (!cell || cell.dataset.index === undefined) return;
+      showCell(grid.which, Number(cell.dataset.index), false);
+    });
+
+    node.addEventListener("pointerleave", () => {
+      if (!pinnedCell) renderCellInspector(null, null);
+    });
+
+    node.addEventListener("click", (event) => {
+      const cell = event.target.closest(".neuron-cell");
+      if (!cell || cell.dataset.index === undefined) return;
+      const index = Number(cell.dataset.index);
+      if (pinnedCell && pinnedCell.which === grid.which && pinnedCell.n === index)
+        clearPinnedCell();
+      else showCell(grid.which, index, true);
+    });
+
+    /* The grid is a single tab stop with a moving cursor, not 1,024 stops
+     * between the reader and the rest of the page. The cells stay out of the
+     * accessibility tree; the inspector panel below is a live region, so
+     * moving the cursor is what gets announced. */
+    node.tabIndex = 0;
+    node.dataset.cursor = "0";
+    node.addEventListener("keydown", (event) => {
+      const columns = 32;
+      let next = Number(node.dataset.cursor) || 0;
+      switch (event.key) {
+        case "ArrowRight":
+          next = Math.min(N_TOTAL - 1, next + 1);
+          break;
+        case "ArrowLeft":
+          next = Math.max(0, next - 1);
+          break;
+        case "ArrowDown":
+          next = Math.min(N_TOTAL - 1, next + columns);
+          break;
+        case "ArrowUp":
+          next = Math.max(0, next - columns);
+          break;
+        case "Home":
+          next = 0;
+          break;
+        case "End":
+          next = N_TOTAL - 1;
+          break;
+        case "Enter":
+        case " ":
+          event.preventDefault();
+          showCell(grid.which, next, true);
+          return;
+        case "Escape":
+          if (pinnedCell) {
+            event.preventDefault();
+            clearPinnedCell();
+          }
+          return;
+        default:
+          return;
+      }
+      event.preventDefault();
+      node.dataset.cursor = String(next);
+      showCell(grid.which, next, !!pinnedCell);
+    });
+  }
+
+  const clear = $("cellInspectClear");
+  if (clear) clear.addEventListener("click", clearPinnedCell);
+}
+
+
 function wireInspector() {
   const frag = document.createDocumentFragment();
   for (let n = 0; n < N_TOTAL; n++) {
     const cell = document.createElement("span");
     cell.className = "neuron-cell";
     cell.setAttribute("aria-hidden", "true");
+    cell.dataset.index = String(n);
     neuronCells.push(cell);
     frag.append(cell);
   }
@@ -1810,9 +2215,11 @@ function wireInspector() {
     const cell = document.createElement("span");
     cell.className = "neuron-cell";
     cell.setAttribute("aria-hidden", "true");
+    cell.dataset.index = String(n);
     transformerCells.push(cell);
     $("transformerGrid").append(cell);
   }
+  wireCellInspector();
   $("retryTransformer").addEventListener("click", () => {
     $("retryTransformer").hidden = true;
     loadTransformerModels();
@@ -2021,6 +2428,7 @@ function renderTransformerInspector(t) {
   const out = liveTransformerResult();
   if (!out) {
     for (const cell of transformerCells) cell.classList.remove("active");
+    transformerActiveShadow.fill(0);
     const error = transformerLoadErrors[state.weights];
     $("retryTransformer").hidden = !error;
     $("transformerLiveStat").textContent = error
@@ -2039,7 +2447,10 @@ function renderTransformerInspector(t) {
   let count = 0;
   for (let n = 0; n < N_TOTAL; n++) {
     const active = raw[t * N_TOTAL + n] > 0;
-    transformerCells[n].classList.toggle("active", active);
+    if (active !== !!transformerActiveShadow[n]) {
+      transformerCells[n].classList.toggle("active", active);
+      transformerActiveShadow[n] = active ? 1 : 0;
+    }
     count += active ? 1 : 0;
   }
   if (count !== out.activeCounts[state.layer][t])

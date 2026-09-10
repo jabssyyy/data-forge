@@ -22,6 +22,28 @@
       wantedKey = "",
       latest = null;
     const cache = new Map();
+
+    /* Redrawing the graph is by far the most expensive thing that happens on a
+     * token step, and while the reader is up at the instrument the graph is
+     * hundreds of pixels off screen. Track whether it is actually in view and
+     * skip the redraw when it is not, remembering that a repaint is owed so
+     * the graph is correct the moment it scrolls back. Without support for
+     * IntersectionObserver the flag stays true and nothing is skipped. */
+    let graphVisible = true;
+    let repaintOwed = false;
+    if (typeof IntersectionObserver === "function") {
+      graphVisible = false;
+      new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) graphVisible = entry.isIntersecting;
+          if (graphVisible && repaintOwed) {
+            repaintOwed = false;
+            paint();
+          }
+        },
+        { rootMargin: "200px" },
+      ).observe(container);
+    }
     function stop() {
       clearInterval(timer);
       timer = 0;
@@ -83,7 +105,10 @@
       frame.edges.forEach(
         (edge, i) => (edge.peakValue = native.pairs[i].peakValue),
       );
-      graph.update(frame);
+      /* The readouts below are cheap and stay live either way; only the
+       * drawing is deferred, and only while nobody can see it. */
+      if (graphVisible) graph.update(frame);
+      else repaintOwed = true;
       Object.assign(container.dataset, {
         step: String(t),
         head: String(head),

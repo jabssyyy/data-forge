@@ -230,6 +230,11 @@ main {
   border-bottom: 1px solid var(--rule);
   box-shadow: var(--shadow-bar);
   transition: padding 160ms ease;
+  /* Paint containment scopes the repaint this bar's own condense transition
+     triggers to its own box instead of letting the browser consider it part
+     of a bigger shared paint region with the rest of the page. It does not
+     touch layout, so the sticky/condense behaviour and sizing are unchanged. */
+  contain: paint;
 }
 
 .claim__inner {
@@ -1819,6 +1824,7 @@ main {
   gap: 4px;
   max-width: 880px;
   margin: 0 auto;
+  contain: paint;
 }
 .neuron-cell {
   aspect-ratio: 1.7;
@@ -2257,6 +2263,21 @@ main {
 body {
   font-size: 18px;
   line-height: 1.65;
+}
+
+/* The ruled-paper texture used to sit on body's own background with
+   background-attachment: fixed, which makes the browser repaint the whole
+   viewport's worth of gradient on every scroll frame because the scrolling
+   box and the fixed image share one paint. Pinning it on its own layer
+   instead, sized to the viewport and positioned independent of scroll,
+   gives the same texture without asking the scrolling content to repaint
+   for it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -2268,7 +2289,6 @@ body {
       transparent 0 31px,
       color-mix(in srgb, var(--ink) 1.6%, transparent) 31px 32px
     );
-  background-attachment: fixed;
 }
 
 p {
@@ -2667,21 +2687,15 @@ p {
   scroll-margin-top: 140px;
 }
 
-/* Once the reader has scrolled past it the header stops being a title page
-   and becomes a reminder, so the display line goes and the bar collapses to
-   the claim itself. */
-.claim.is-condensed .hero-title {
-  display: none;
-}
+/* The claim bar is NOT pinned: `.tabs` is the sticky element, and the header
+   scrolls away above it. An earlier pass here condensed the bar on scroll on
+   the assumption that it stayed on screen, which meant the page relayouted
+   from a 345px header to a 178px one as the reader scrolled past 64px. That
+   is a 167px jump of everything below, animated across padding and font-size,
+   for no visible benefit on a header that is leaving anyway. The condensed
+   state is now purely cosmetic and changes no geometry. */
 .claim.is-condensed .claim__inner {
-  padding: 13px 28px 14px;
-  gap: 5px 32px;
   border-bottom: 0;
-}
-.claim.is-condensed .claim__text {
-  font-size: clamp(15px, 1.35vw, 17px);
-  line-height: 1.45;
-  max-width: 104ch;
 }
 
 /* --------------------------------------------------------- less motion */
@@ -2751,4 +2765,15 @@ code {
   font: 400 14px/1 var(--sans);
   color: var(--ink-3);
   font-style: italic;
+}
+
+/* The claim bar receives focus when the reader returns to the top. That is a
+   programmatic move, so it should not paint a ring for a mouse user, but it
+   must still show one when the keyboard put it there. */
+.claim:focus {
+  outline: none;
+}
+.claim:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }

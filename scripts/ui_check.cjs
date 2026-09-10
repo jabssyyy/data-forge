@@ -268,6 +268,73 @@ const CANONICAL_RATIO = "3.10×";
         ":1)",
     );
 
+    /* The provenance panel claims specific weights belong to a coordinate.
+     * Recompute those slices here, straight from the weight file and by a
+     * different index path than the page uses, and require the numbers to
+     * agree. A wrong axis would otherwise show a confident, false answer. */
+    const weights = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, "../weights_trained.json"), "utf8"),
+    );
+    const l2 = (v) => Math.sqrt(v.reduce((acc, x) => acc + x * x, 0));
+    const N_PER_HEAD = 256;
+    for (const index of [0, 5, 517, 1023]) {
+      const head = Math.floor(index / N_PER_HEAD);
+      const local = index % N_PER_HEAD;
+      const expected = [
+        l2(weights.encoder[head].map((row) => row[local])),
+        l2(weights.encoder_v[head].map((row) => row[local])),
+        l2(weights.decoder[index]),
+      ];
+
+      await page.hover('#neuronGrid .neuron-cell[data-index="' + index + '"]');
+      await page.waitForSelector("#cellInspectBody:not([hidden])");
+      const shown = await page.evaluate(() => ({
+        title: document.getElementById("cellInspectTitle").textContent.trim(),
+        where: [...document.querySelectorAll("#cellInspectRows tr")].map(
+          (row) => row.cells[1].textContent.trim(),
+        ),
+        norms: [...document.querySelectorAll("#cellInspectRows tr")].map((row) =>
+          Number(row.cells[3].textContent),
+        ),
+        owned: document.getElementById("cellInspectOwned").textContent.trim(),
+      }));
+
+      assert.equal(shown.title, "Neuron " + index, "wrong coordinate reported");
+      assert.equal(
+        shown.owned,
+        "96 of 100,352",
+        "parameter accounting changed for neuron " + index,
+      );
+      assert.deepEqual(
+        shown.where,
+        [
+          "encoder[head " + head + "][:, " + local + "]",
+          "encoder_v[head " + head + "][:, " + local + "]",
+          "decoder[" + index + ", :]",
+        ],
+        "provenance addresses wrong for neuron " + index,
+      );
+      shown.norms.forEach((value, slot) => {
+        assert(
+          Math.abs(value - expected[slot]) < 5e-4,
+          "neuron " +
+            index +
+            " slice " +
+            slot +
+            ": page says " +
+            value +
+            ", weight file says " +
+            expected[slot].toFixed(4),
+        );
+      });
+    }
+    /* the decomposition has to account for the whole model */
+    assert.equal(96 * 1024 + 2048, 100352, "BDH parameter accounting");
+    assert.equal(64 * 1024 + 6144, 71680, "Transformer parameter accounting");
+    report.checks.push(
+      "Cell provenance matches the weight file for 4 coordinates, and 96x1024+2048 and 64x1024+6144 account for both models exactly",
+    );
+
     /* every link that leaves the page opens a new tab */
     const badLinks = await page.evaluate(() => {
       const bad = [];
