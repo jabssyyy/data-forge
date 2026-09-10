@@ -20,6 +20,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    defaults:
+      run:
+        working-directory: repo
     steps:
       - uses: actions/checkout@v6
       - name: Verify the shipped numerical engines
@@ -32,7 +35,7 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          path: repo/_site
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

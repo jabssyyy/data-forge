@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-08",
+  "source_repository": "https://github.com/jabssyyy/data-forge",
+  "source_commit": "a25bd355dae8489c6644d2ddb62d65a252d3bddf",
+  "environment": {
+    "python": "3.12.4",
+    "torch": "2.7.0",
+    "platform": "macOS-26.5-arm64-arm-64bit",
+    "machine": "arm64"
+  },
+  "command": "python3 bdh_probe.py --out repro/results.json --export-weights repro/weights_trained.json --dump-reference repro/reference.json",
+  "result_sha256": "8ee8e5a713a65925cbb9835709ee4046d358b4a0dfddacfbd395761db2818d8d",
+  "baseline_files_overwritten": false,
+  "final_training_loss_nats": 0.4628489017486572,
+  "layers": {
+    "0": {
+      "warmup_including_token0": 0.10268930288461539,
+      "memorize": 0.1263427734375,
+      "repeat": 0.12761579241071427,
+      "ratio": 0.9900245968843947
+    },
+    "1": {
+      "warmup_including_token0": 0.15324519230769232,
+      "memorize": 0.1719970703125,
+      "repeat": 0.09552873883928571,
+      "ratio": 1.8004746257758306
+    },
+    "2": {
+      "warmup_including_token0": 0.19734074519230768,
+      "memorize": 0.16845703125,
+      "repeat": 0.050048828125,
+      "ratio": 3.3658536585365852
+    },
+    "3": {
+      "warmup_including_token0": 0.19088040865384615,
+      "memorize": 0.165771484375,
+      "repeat": 0.06912667410714286,
+      "ratio": 2.3980827447023207
+    }
+  },
+  "cross_entropy": {
+    "at_position": {
+      "warmup": 0.36966948886663054,
+      "memorize": 6.03000839095308,
+      "repeat": 1.1372101503404637
+    },
+    "of_target": {
+      "warmup": 0.11497513607540921,
+      "memorize": 6.458109859624974,
+      "repeat": 1.1169240757448509
+    }
+  },
+  "conclusion": "Fresh public clone training succeeds and retains an approximately threefold layer-2 effect, but does not reproduce the shipped weights or exact measurements bit-for-bit on this runtime. The original shipped baseline remains unchanged. JS parity against its preserved fixtures passes exactly on counts and zeros."
+}

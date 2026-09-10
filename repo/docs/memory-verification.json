@@ -1,0 +1,661 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 0,
+      "attentionError": 2.2260558673130785e-7,
+      "memoryReadError": 2.2260558690400672e-7,
+      "gateError": 1.0468049915630326e-7,
+      "xyError": 9.444866014178291e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 1,
+      "attentionError": 1.6247830952928346e-7,
+      "memoryReadError": 1.6247830985908593e-7,
+      "gateError": 9.968186911226172e-8,
+      "xyError": 6.83789185244014e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 2,
+      "attentionError": 1.717386646528325e-7,
+      "memoryReadError": 1.717386646528325e-7,
+      "gateError": 6.234568788675151e-8,
+      "xyError": 9.261025414741415e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 3,
+      "attentionError": 1.5851268690537108e-7,
+      "memoryReadError": 1.5851268696415448e-7,
+      "gateError": 1.3498339634135144e-7,
+      "xyError": 5.895014623514645e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 0,
+      "attentionError": 1.9090732477726762e-7,
+      "memoryReadError": 1.9090732487489897e-7,
+      "gateError": 9.350605429409554e-8,
+      "xyError": 6.648274581082281e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 1,
+      "attentionError": 1.4396168528952147e-7,
+      "memoryReadError": 1.4396168458968424e-7,
+      "gateError": 8.059553472878928e-8,
+      "xyError": 6.576446219440228e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 2,
+      "attentionError": 1.9645888900530692e-7,
+      "memoryReadError": 1.9645888910307072e-7,
+      "gateError": 7.523551171541817e-8,
+      "xyError": 9.89912642327918e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 3,
+      "attentionError": 1.7376570752647766e-7,
+      "memoryReadError": 1.737657076375949e-7,
+      "gateError": 4.680563114299938e-8,
+      "xyError": 5.569386198753001e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 0,
+      "attentionError": 1.0504079450662556e-7,
+      "memoryReadError": 1.0504079459335627e-7,
+      "gateError": 8.764160752797556e-8,
+      "xyError": 4.4217230020354776e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 1,
+      "attentionError": 1.559782856023175e-7,
+      "memoryReadError": 1.5597828521142278e-7,
+      "gateError": 6.293705869377762e-8,
+      "xyError": 5.917399760717669e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 2,
+      "attentionError": 1.6856892455842828e-7,
+      "memoryReadError": 1.6856892436523298e-7,
+      "gateError": 7.488927248228757e-8,
+      "xyError": 8.205847977964835e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 3,
+      "attentionError": 1.8670523217886117e-7,
+      "memoryReadError": 1.8670523190939042e-7,
+      "gateError": 7.306151702584826e-8,
+      "xyError": 6.732352996567714e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 0,
+      "attentionError": 1.5303993594759567e-7,
+      "memoryReadError": 1.530399361785914e-7,
+      "gateError": 7.547413676545202e-8,
+      "xyError": 4.342792683127917e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 1,
+      "attentionError": 1.6439299294522628e-7,
+      "memoryReadError": 1.6439299316318787e-7,
+      "gateError": 1.2096431687838736e-7,
+      "xyError": 5.343734661300929e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 2,
+      "attentionError": 9.272617526546754e-8,
+      "memoryReadError": 9.272617505528866e-8,
+      "gateError": 6.44221593298552e-8,
+      "xyError": 8.922378636896797e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 3,
+      "attentionError": 1.785449678695643e-7,
+      "memoryReadError": 1.785449681737245e-7,
+      "gateError": 8.456237363192074e-8,
+      "xyError": 3.3708063981077675e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 0,
+      "attentionError": 1.757599679637789e-7,
+      "memoryReadError": 1.7575996808124867e-7,
+      "gateError": 8.77160490772467e-8,
+      "xyError": 6.79914587366992e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 1,
+      "attentionError": 2.9961874393430373e-7,
+      "memoryReadError": 2.9961874410507187e-7,
+      "gateError": 1.333259264396272e-7,
+      "xyError": 6.022268369439503e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 2,
+      "attentionError": 1.268544712338001e-7,
+      "memoryReadError": 1.268544712338001e-7,
+      "gateError": 6.337713280721598e-8,
+      "xyError": 1.0225759459288434e-7
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 3,
+      "attentionError": 6.11494443624314e-8,
+      "memoryReadError": 6.114944423912536e-8,
+      "gateError": 7.488510048920584e-8,
+      "xyError": 3.415553623147654e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 0,
+      "attentionError": 6.695364163316863e-8,
+      "memoryReadError": 6.695364207024773e-8,
+      "gateError": 4.9994414665617856e-8,
+      "xyError": 7.023649132972022e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 1,
+      "attentionError": 1.5173520879959488e-7,
+      "memoryReadError": 1.5173520971495673e-7,
+      "gateError": 6.028484101341504e-8,
+      "xyError": 5.161899268379097e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 2,
+      "attentionError": 1.3144467046931818e-7,
+      "memoryReadError": 1.3144467125329133e-7,
+      "gateError": 5.521937393301563e-8,
+      "xyError": 6.135380089070134e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 3,
+      "attentionError": 1.6946013051588354e-7,
+      "memoryReadError": 1.6946013061179507e-7,
+      "gateError": 5.1611643177936014e-8,
+      "xyError": 5.569386198753001e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 0,
+      "attentionError": 6.579923514674315e-8,
+      "memoryReadError": 6.579923504460375e-8,
+      "gateError": 4.857413896891056e-8,
+      "xyError": 5.969314688548859e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 1,
+      "attentionError": 1.2403152459782882e-7,
+      "memoryReadError": 1.2403152478675623e-7,
+      "gateError": 6.053747214053993e-8,
+      "xyError": 3.722906654594113e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 2,
+      "attentionError": 6.436250212003346e-8,
+      "memoryReadError": 6.436250212003346e-8,
+      "gateError": 6.730745185220828e-8,
+      "xyError": 1.0064057106748619e-7
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 3,
+      "attentionError": 1.7622683906003008e-7,
+      "memoryReadError": 1.762268391806797e-7,
+      "gateError": 6.621001355650978e-8,
+      "xyError": 9.226078406380014e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 0,
+      "attentionError": 5.845523979596049e-8,
+      "memoryReadError": 5.845523972796006e-8,
+      "gateError": 5.5479830051076176e-8,
+      "xyError": 3.7404940987932104e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 1,
+      "attentionError": 1.5138075907086296e-7,
+      "memoryReadError": 1.513807591695548e-7,
+      "gateError": 8.321888427195397e-8,
+      "xyError": 7.356440075942743e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 2,
+      "attentionError": 5.312223019880282e-8,
+      "memoryReadError": 5.3122230142457453e-8,
+      "gateError": 5.966387245310348e-8,
+      "xyError": 7.55759312087838e-8
+    },
+    {
+      "weights": "weights_trained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 3,
+      "attentionError": 9.446247251598033e-8,
+      "memoryReadError": 9.446247251598033e-8,
+      "gateError": 7.283223474901185e-8,
+      "xyError": 4.189065092655276e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 0,
+      "attentionError": 1.4098698207066804e-7,
+      "memoryReadError": 1.4098698225316743e-7,
+      "gateError": 9.76584577951453e-8,
+      "xyError": 1.3049094293024179e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 1,
+      "attentionError": 2.3897148340631854e-7,
+      "memoryReadError": 2.389714835863576e-7,
+      "gateError": 1.5562058751998527e-7,
+      "xyError": 1.8162844654068804e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 2,
+      "attentionError": 2.1756632014311964e-7,
+      "memoryReadError": 2.1756632025185334e-7,
+      "gateError": 1.422273324956693e-7,
+      "xyError": 1.251659136554088e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 0,
+      "head": 3,
+      "attentionError": 2.091689281560089e-7,
+      "memoryReadError": 2.0916892844999802e-7,
+      "gateError": 1.3791679347675437e-7,
+      "xyError": 1.22510102792403e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 0,
+      "attentionError": 1.9864419998903428e-7,
+      "memoryReadError": 1.9864419983912054e-7,
+      "gateError": 1.064589168262949e-7,
+      "xyError": 1.3055738664743905e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 1,
+      "attentionError": 2.8262550908206113e-7,
+      "memoryReadError": 2.826255093204466e-7,
+      "gateError": 7.906409463296096e-8,
+      "xyError": 1.2686034255720782e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 2,
+      "attentionError": 2.3408798306422793e-7,
+      "memoryReadError": 2.3408798345383516e-7,
+      "gateError": 1.444245513419576e-7,
+      "xyError": 1.3749198534109707e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 1,
+      "head": 3,
+      "attentionError": 2.1067911956846635e-7,
+      "memoryReadError": 2.1067911956846635e-7,
+      "gateError": 1.2452527401911563e-7,
+      "xyError": 9.899013096439214e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 0,
+      "attentionError": 1.676181768645428e-7,
+      "memoryReadError": 1.6761817679010533e-7,
+      "gateError": 1.0264868360548719e-7,
+      "xyError": 1.0697276912034481e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 1,
+      "attentionError": 1.5559494112509238e-7,
+      "memoryReadError": 1.5559494133893593e-7,
+      "gateError": 9.850147428363129e-8,
+      "xyError": 1.1400039892043427e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 2,
+      "attentionError": 2.1259926496711137e-7,
+      "memoryReadError": 2.1259926508046937e-7,
+      "gateError": 1.4633784452211943e-7,
+      "xyError": 9.48476647058323e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 2,
+      "head": 3,
+      "attentionError": 2.2562080842339045e-7,
+      "memoryReadError": 2.256208088674562e-7,
+      "gateError": 1.35904928996595e-7,
+      "xyError": 1.6736787500047044e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 0,
+      "attentionError": 2.4279421873528915e-7,
+      "memoryReadError": 2.4279421904487234e-7,
+      "gateError": 1.3341163384123847e-7,
+      "xyError": 9.382899118820246e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 1,
+      "attentionError": 1.8155032870121726e-7,
+      "memoryReadError": 1.8155032870121726e-7,
+      "gateError": 1.4170497291809717e-7,
+      "xyError": 1.4483438194868092e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 2,
+      "attentionError": 2.2945212960583656e-7,
+      "memoryReadError": 2.2945212995383078e-7,
+      "gateError": 1.612209178101045e-7,
+      "xyError": 1.4694800799717435e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 1,
+      "layer": 3,
+      "head": 3,
+      "attentionError": 2.1350668723981584e-7,
+      "memoryReadError": 2.135066865649762e-7,
+      "gateError": 1.4673878643695224e-7,
+      "xyError": 1.406192680919591e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 0,
+      "attentionError": 1.7089753941244466e-7,
+      "memoryReadError": 1.7089753903271887e-7,
+      "gateError": 8.940112657126595e-8,
+      "xyError": 8.23585100764328e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 1,
+      "attentionError": 1.465194523578862e-7,
+      "memoryReadError": 1.465194521270279e-7,
+      "gateError": 1.029231135293289e-7,
+      "xyError": 1.0369303898462222e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 2,
+      "attentionError": 1.9647201115695272e-7,
+      "memoryReadError": 1.9647201129330996e-7,
+      "gateError": 1.128331439965651e-7,
+      "xyError": 1.3687778974030713e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 0,
+      "head": 3,
+      "attentionError": 1.559972158102505e-7,
+      "memoryReadError": 1.5599721590321744e-7,
+      "gateError": 9.972501394203355e-8,
+      "xyError": 7.728168892858149e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 0,
+      "attentionError": 1.3983880974912992e-7,
+      "memoryReadError": 1.3983880993253286e-7,
+      "gateError": 8.242684970421472e-8,
+      "xyError": 1.1454991342832899e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 1,
+      "attentionError": 2.0577330782522794e-7,
+      "memoryReadError": 2.0577330813742962e-7,
+      "gateError": 7.642313151431708e-8,
+      "xyError": 1.3186489773879915e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 2,
+      "attentionError": 1.808275246363015e-7,
+      "memoryReadError": 1.8082752405442502e-7,
+      "gateError": 1.3851424750748173e-7,
+      "xyError": 1.438324034066243e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 1,
+      "head": 3,
+      "attentionError": 1.2839233749042758e-7,
+      "memoryReadError": 1.2839233735242072e-7,
+      "gateError": 1.0867172158884435e-7,
+      "xyError": 1.0198475735821898e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 0,
+      "attentionError": 1.8594621043885149e-7,
+      "memoryReadError": 1.859462106237982e-7,
+      "gateError": 9.212569590900526e-8,
+      "xyError": 1.0438862941776422e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 1,
+      "attentionError": 1.2751090282965527e-7,
+      "memoryReadError": 1.2751090327298337e-7,
+      "gateError": 7.345759035926757e-8,
+      "xyError": 8.726730332843545e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 2,
+      "attentionError": 2.1912817744499946e-7,
+      "memoryReadError": 2.191281772919907e-7,
+      "gateError": 1.48367712904091e-7,
+      "xyError": 1.0948434089258715e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 2,
+      "head": 3,
+      "attentionError": 1.430991094350115e-7,
+      "memoryReadError": 1.430991095602404e-7,
+      "gateError": 1.076922782275723e-7,
+      "xyError": 9.875250796019797e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 0,
+      "attentionError": 2.2554457144451736e-7,
+      "memoryReadError": 2.2554457144451736e-7,
+      "gateError": 8.39532854054052e-8,
+      "xyError": 1.0585477028622273e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 1,
+      "attentionError": 1.3308749813564112e-7,
+      "memoryReadError": 1.330874979891478e-7,
+      "gateError": 1.1847955446496496e-7,
+      "xyError": 9.991856638891786e-8
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 2,
+      "attentionError": 1.9193225743214703e-7,
+      "memoryReadError": 1.9193225734754257e-7,
+      "gateError": 1.2229571105053508e-7,
+      "xyError": 1.0538246923728174e-7
+    },
+    {
+      "weights": "weights_untrained.json",
+      "decay": 0.96,
+      "layer": 3,
+      "head": 3,
+      "attentionError": 1.386955533292849e-7,
+      "memoryReadError": 1.3869555371200703e-7,
+      "gateError": 1.3980169002902783e-7,
+      "xyError": 1.1169887324748923e-7
+    }
+  ],
+  "checks": [
+    "instrumentation bit-exact",
+    "direct causal attention versus recurrent memory",
+    "full centered projection versus gated activations",
+    "empty initial memory",
+    "fixed-cohort prefix causality",
+    "signed edge read/write histories",
+    "damping age law"
+  ],
+  "caseCount": 64,
+  "maximumErrors": {
+    "attentionError": 2.9961874393430373e-7,
+    "memoryReadError": 2.9961874410507187e-7,
+    "gateError": 1.612209178101045e-7,
+    "xyError": 1.8162844654068804e-7
+  }
+}

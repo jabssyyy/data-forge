@@ -1,0 +1,124 @@
+{
+  "themes": {
+    "light": {
+      "surface": "#ffffff",
+      "tokens": {
+        "--ink": {
+          "colour": "#090a0d",
+          "ratio": 19.8,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--ink-2": {
+          "colour": "#414550",
+          "ratio": 9.58,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--ink-3": {
+          "colour": "#626672",
+          "ratio": 5.73,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--accent-ink": {
+          "colour": "#194ea9",
+          "ratio": 7.77,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--warn-ink": {
+          "colour": "#754d0a",
+          "ratio": 7.44,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--accent": {
+          "colour": "#245bc4",
+          "ratio": 6.23,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-act": {
+          "colour": "#245bc4",
+          "ratio": 6.23,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-ce": {
+          "colour": "#b94720",
+          "ratio": 5.27,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-oracle": {
+          "colour": "#087e60",
+          "ratio": 5.04,
+          "threshold": 3.0,
+          "passes": true
+        }
+      }
+    },
+    "dark": {
+      "surface": "#121723",
+      "tokens": {
+        "--ink": {
+          "colour": "#f4f5fa",
+          "ratio": 16.45,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--ink-2": {
+          "colour": "#bdc5d7",
+          "ratio": 10.35,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--ink-3": {
+          "colour": "#929eb6",
+          "ratio": 6.64,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--accent-ink": {
+          "colour": "#a8c6ff",
+          "ratio": 10.39,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--warn-ink": {
+          "colour": "#f0c985",
+          "ratio": 11.43,
+          "threshold": 4.5,
+          "passes": true
+        },
+        "--accent": {
+          "colour": "#89b2ff",
+          "ratio": 8.42,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-act": {
+          "colour": "#89b2ff",
+          "ratio": 8.42,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-ce": {
+          "colour": "#f39d73",
+          "ratio": 8.43,
+          "threshold": 3.0,
+          "passes": true
+        },
+        "--s-oracle": {
+          "colour": "#63d4b1",
+          "ratio": 9.88,
+          "threshold": 3.0,
+          "passes": true
+        }
+      }
+    }
+  },
+  "failures": [],
+  "passed": true
+}

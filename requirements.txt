@@ -1,2 +1,0 @@
-# Training/reproduction environment verified with Python 3.12.4.
-torch==2.7.0

@@ -19,3 +19,16 @@ Thumbs.db
 _site/
 test-results/
 node_modules/
+demo/api_key.txt
+demo/.env
+demo/audio/
+demo/work/
+
+# Private authoring files and local-only archives
+.local-only/
+/demo/
+repo/_site/
+repo/node_modules/
+repo/test-results/
+**/api_key.txt
+**/.env

@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "browser": "152.0.7977.82",
+  "url": "http://127.0.0.1:8000/",
+  "initial": {
+    "ratio": "3.10×",
+    "word": "mmgtfhhe",
+    "ms": 96.09999990463257,
+    "grid": 185,
+    "expected": 185,
+    "cacheEntries": 1
+  },
+  "gridStatesChecked": 616,
+  "viewports": [
+    {
+      "theme": "light",
+      "width": 380,
+      "body": 380,
+      "viewport": 380,
+      "gridColumns": 16
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "body": 768,
+      "viewport": 768,
+      "gridColumns": 32
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "body": 1440,
+      "viewport": 1440,
+      "gridColumns": 32
+    },
+    {
+      "theme": "dark",
+      "width": 380,
+      "body": 380,
+      "viewport": 380,
+      "gridColumns": 16
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "body": 768,
+      "viewport": 768,
+      "gridColumns": 32
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "body": 1440,
+      "viewport": 1440,
+      "gridColumns": 32
+    }
+  ],
+  "pageErrors": [],
+  "checks": [
+    "both grids all layers/tokens/weights",
+    "guide states",
+    "offline immutability",
+    "play/pause",
+    "sequence shrink",
+    "sandbox96",
+    "light/dark",
+    "380px/768px/1440px",
+    "reduced motion",
+    "weight failure"
+  ],
+  "realPhoneTest": "not performed; browser viewport emulation only"
+}

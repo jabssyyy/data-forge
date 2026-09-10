@@ -1,0 +1,17 @@
+When a neural network sees something familiar, does it activate fewer neurons? We built Sparsity Is Not a Budget: an interactive tool that helps students explore that question inside a small Dragon Hatchling model, or B D H.
+
+We trained this model beforehand to predict synthetic letter sequences. Training adjusted its weights; those weights stay fixed while you use the page. The sequence starts with a fixed warm-up, then an eight-letter word. Add repetitions. At layer two, average activity falls from about sixteen percent to five percent: a threefold reduction, without setting an activation budget.
+
+The upper chart measures activity. Below it, we compare the model's prediction error with what the sequence generator makes predictable. These are different quantities. Lower prediction error means better predictions; lower activity means fewer positive activations. The displayed ratio compares phase averages, not two individual letters.
+
+Each square represents one measured coordinate. Scrubbing changes the token we inspect, and selecting a square reveals its value. B D H multiplies two nonnegative signals. Both must be positive for the coordinate to fire. That explains what we count. It doesn't, by itself, explain why repetition changes the count.
+
+Now let's challenge the result. At layer zero, there's no comparable drop. Switch to untrained, the random weights from before learning, and the large layer-two reduction disappears. There's another important boundary: the trained model predicts the warm-up well, but activity stays high. So activity is not a simple confidence meter.
+
+You may notice that the trained Transformer looks better here. On this preset, it does have lower prediction error. Both models use context. Training optimizes prediction, but their attention rules, parameter counts, and activation mechanisms differ. We haven't isolated what causes the advantage. Our claim is that B D H becomes quieter on repetition, not that it beats the Transformer.
+
+The memory lab separates another pair of ideas: what fires now, and what context has accumulated. Step forward and inspect a connection. These lines show a selected projection of computed context, not literal synapses. A quieter activation pattern does not mean that the memory was erased.
+
+After the guided experiment, learners can try their own inputs. The browser computes new results, and the sandbox clearly labels inputs outside the training protocol. Exploration stays separate from the evidence behind our headline.
+
+This is an independent small-model implementation. The source, numerical checks, explanations, and research references are available. We want learners to leave with more than a memorable curve: the ability to reproduce a result, question an explanation, and recognize its limits.

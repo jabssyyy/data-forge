@@ -1,0 +1,191 @@
+1
+00:00:00,150 --> 00:00:04,917
+When a neural network sees something familiar, does it activate fewer neurons?
+
+2
+00:00:05,247 --> 00:00:10,177
+We built Sparsity Is Not a Budget: an interactive tool that helps students explore
+
+3
+00:00:10,111 --> 00:00:15,157
+that question inside a small Dragon Hatchling model, or B D H.
+
+4
+00:00:15,566 --> 00:00:19,799
+We trained this model beforehand to predict synthetic letter sequences.
+
+5
+00:00:20,129 --> 00:00:25,047
+Training adjusted its weights; those weights stay fixed while you use the page.
+
+6
+00:00:25,260 --> 00:00:29,017
+The sequence starts with a fixed warm-up, then an eight-letter word.
+
+7
+00:00:29,590 --> 00:00:30,793
+Add repetitions.
+
+8
+00:00:31,065 --> 00:00:36,494
+At layer two, average activity falls from about sixteen percent to five percent: a
+
+9
+00:00:36,464 --> 00:00:40,186
+threefold reduction, without setting an activation budget.
+
+10
+00:00:40,601 --> 00:00:42,791
+The upper chart measures activity.
+
+11
+00:00:43,120 --> 00:00:47,562
+Below it, we compare the model's prediction error with what the sequence generator makes
+
+12
+00:00:47,521 --> 00:00:48,340
+predictable.
+
+13
+00:00:48,612 --> 00:00:50,175
+These are different quantities.
+
+14
+00:00:50,504 --> 00:00:56,630
+Lower prediction error means better predictions; lower activity means fewer positive activations.
+
+15
+00:00:56,959 --> 00:01:02,249
+The displayed ratio compares phase averages, not two individual letters.
+
+16
+00:01:02,657 --> 00:01:05,253
+Each square represents one measured coordinate.
+
+17
+00:01:05,525 --> 00:01:10,141
+Scrubbing changes the token we inspect, and selecting a square reveals its value.
+
+18
+00:01:10,471 --> 00:01:13,473
+B D H multiplies two nonnegative signals.
+
+19
+00:01:13,803 --> 00:01:16,445
+Both must be positive for the coordinate to fire.
+
+20
+00:01:16,925 --> 00:01:18,546
+That explains what we count.
+
+21
+00:01:18,609 --> 00:01:22,587
+It doesn't, by itself, explain why repetition changes the count.
+
+22
+00:01:23,012 --> 00:01:24,691
+Now let's challenge the result.
+
+23
+00:01:24,823 --> 00:01:27,605
+At layer zero, there's no comparable drop.
+
+24
+00:01:27,935 --> 00:01:33,259
+Switch to untrained, the random weights from before learning, and the large layer-two reduction
+
+25
+00:01:33,229 --> 00:01:34,176
+disappears.
+
+26
+00:01:34,506 --> 00:01:40,202
+There's another important boundary: the trained model predicts the warm-up well, but activity stays
+
+27
+00:01:40,172 --> 00:01:40,713
+high.
+
+28
+00:01:40,845 --> 00:01:43,917
+So activity is not a simple confidence meter.
+
+29
+00:01:44,338 --> 00:01:47,329
+You may notice that the trained Transformer looks better here.
+
+30
+00:01:47,658 --> 00:01:50,673
+On this preset, it does have lower prediction error.
+
+31
+00:01:50,944 --> 00:01:52,704
+Both models use context.
+
+32
+00:01:53,034 --> 00:01:58,985
+Training optimizes prediction, but their attention rules, parameter counts, and activation mechanisms differ.
+
+33
+00:01:59,373 --> 00:02:02,050
+We haven't isolated what causes the advantage.
+
+34
+00:02:02,322 --> 00:02:06,393
+Our claim is that B D H becomes quieter on repetition, not that it
+
+35
+00:02:06,351 --> 00:02:08,401
+beats the Transformer.
+
+36
+00:02:08,823 --> 00:02:14,020
+The memory lab separates another pair of ideas: what fires now, and what context
+
+37
+00:02:13,955 --> 00:02:15,018
+has accumulated.
+
+38
+00:02:15,150 --> 00:02:17,305
+Step forward and inspect a connection.
+
+39
+00:02:17,635 --> 00:02:22,646
+These lines show a selected projection of computed context, not literal synapses.
+
+40
+00:02:22,918 --> 00:02:27,174
+A quieter activation pattern does not mean that the memory was erased.
+
+41
+00:02:27,589 --> 00:02:31,393
+After the guided experiment, learners can try their own inputs.
+
+42
+00:02:31,722 --> 00:02:36,931
+The browser computes new results, and the sandbox clearly labels inputs outside the training
+
+43
+00:02:36,877 --> 00:02:37,743
+protocol.
+
+44
+00:02:38,073 --> 00:02:41,900
+Exploration stays separate from the evidence behind our headline.
+
+45
+00:02:42,304 --> 00:02:45,260
+This is an independent small-model implementation.
+
+46
+00:02:45,532 --> 00:02:50,763
+The source, numerical checks, explanations, and research references are available.
+
+47
+00:02:51,244 --> 00:02:55,245
+We want learners to leave with more than a memorable curve: the ability to
+
+48
+00:02:55,226 --> 00:02:59,726
+reproduce a result, question an explanation, and recognize its limits.
