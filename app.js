@@ -2396,6 +2396,12 @@ async function loadTransformerModels() {
         const response = await fetch(path);
         if (!response.ok) throw new Error("HTTP " + response.status);
         transformerModels[kind] = new TinyTransformer(await response.json());
+        /* Repaint the control's own panel as soon as its model exists. The
+         * retry button hides itself on click, so without this the reader can
+         * see a hidden retry button above a label still reading "unavailable"
+         * until the deferred refresh lands a frame or more later. */
+        if (kind === state.weights && state.result && !state.result.pending)
+          renderTransformerInspector(state.selectedToken);
         if (state.result && !state.result.pending) refresh();
       } catch (error) {
         transformerLoadErrors[kind] = error.message;

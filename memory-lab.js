@@ -31,6 +31,10 @@
      * IntersectionObserver the flag stays true and nothing is skipped. */
     let graphVisible = true;
     let repaintOwed = false;
+    /* The graph must exist before it can be skipped. The first draw of any
+     * analysis always runs, whatever the scroll position, so the diagram and
+     * its focusable nodes are present for anything that reads them. */
+    let hasDrawn = false;
     if (typeof IntersectionObserver === "function") {
       graphVisible = false;
       new IntersectionObserver(
@@ -66,6 +70,9 @@
       scheduled = 0;
       wantedKey = "";
       activeKey = "";
+      /* the graph is being torn down, so the next analysis owes a first draw */
+      hasDrawn = false;
+      repaintOwed = false;
       native = variant = null;
       stop();
       enable(false);
@@ -107,8 +114,13 @@
       );
       /* The readouts below are cheap and stay live either way; only the
        * drawing is deferred, and only while nobody can see it. */
-      if (graphVisible) graph.update(frame);
-      else repaintOwed = true;
+      if (graphVisible || !hasDrawn) {
+        graph.update(frame);
+        hasDrawn = true;
+        repaintOwed = false;
+      } else {
+        repaintOwed = true;
+      }
       Object.assign(container.dataset, {
         step: String(t),
         head: String(head),

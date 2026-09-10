@@ -1,6 +1,6 @@
 {
   "url": "http://127.0.0.1:8000/",
-  "checked_at": "2026-09-10T03:24:34.360Z",
+  "checked_at": "2026-09-10T04:08:00.798Z",
   "errors": [],
   "checks": [
     "Skeleton renders while loading and is cleared after the measurement; canonical ratio 3.10×",
